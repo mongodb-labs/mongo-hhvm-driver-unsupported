@@ -1,0 +1,2 @@
+HHVM_EXTENSION(mongoExtension mongoExtension.cpp)
+HHVM_SYSTEMLIB(mongoExtension mongoExtension.php)
