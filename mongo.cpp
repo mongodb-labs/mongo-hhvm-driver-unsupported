@@ -30,23 +30,22 @@ static String HHVM_FUNCTION(hello_world, const String& statement) {
 static int64_t HHVM_FUNCTION(sum_all, CArrRef numberArray) {
   int64_t sum = 0;
   for( int i = 0 ; i < numberArray.size() ; i++) {
-    //std::cout << toString(numberArray[i]) << std::endl;
     sum += toInt64(numberArray[i]);
   }
   return sum;
 }
 
-static class MongoExtension : public Extension {
+static class mongoExtension : public Extension {
  public:
-  MongoExtension() : Extension("mongoExtension") {}
+  mongoExtension() : Extension("mongo") {}
   virtual void moduleInit() {
     HHVM_FE(example_sum);
     HHVM_FE(hello_world);
     HHVM_FE(sum_all);
     loadSystemlib();
   }
-} s_mongoExtension_extension;
+} s_mongo_extension;
 
-HHVM_GET_MODULE(mongoExtension)
+HHVM_GET_MODULE(mongo)
 
 } // namespace HPHP

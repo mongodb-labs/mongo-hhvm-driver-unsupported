@@ -7,5 +7,5 @@ if [ ! -z "${REALPATH}" ]; then
 fi
 
 ${HPHP_HOME}/hphp/hhvm/hhvm \
-  -vDynamicExtensions.0=${DIRNAME}/mongoExtension.so \
+  -vDynamicExtensions.0=${DIRNAME}/mongo.so \
   ${DIRNAME}/mongoTest.php
