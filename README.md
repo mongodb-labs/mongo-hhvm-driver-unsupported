@@ -28,7 +28,9 @@ $ make
 
 This will produce a `mongo.so` file, the dynamically-loadable extension. Alternatively, run build.sh from inside the extension folder.
 
-To enable the extension, you need to have the following section in your hhvm config file (typically config.hdf):
+To enable and test the extension, either run ./test.sh, or follow the following steps:
+
+You need to have the following section in your hhvm config file (typically config.hdf):
 
 ~~~
 DynamicExtensionPath = /path/to/hhvm/extensions
@@ -40,12 +42,11 @@ DynamicExtensions {
 Where `/path/to/hhvm/extensions` is a folder containing all HipHop extensions, and `mongo.so` is in
 it. This will cause the extension to be loaded when the virtual machine starts up.
 
-If that doesn't work, you can use the below for now:
+## Tests
+From the shell (assuming that you're in the mongo-hhvm-driver folder, and the config.hdf file is in there too), run the following to make sure that the dummy extension is set up properly.
 
 ~~~
-DynamicExtensions {
-	mongo = /mongo.so
-}
+${HPHP_HOME}/hphp/hhvm/hhvm mongoTest.php --config config.hdf
 ~~~
 
 ## Documentation
