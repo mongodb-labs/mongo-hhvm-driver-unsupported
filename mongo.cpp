@@ -35,6 +35,20 @@ static int64_t HHVM_FUNCTION(sum_all, CArrRef numberArray) {
   return sum;
 }
 
+//MongoClient methods
+
+Array HHVM_METHOD(MongoClient, getConnections) {
+  Array ret;
+  ret.append("Not Implemented");
+  return ret;
+}
+
+Array HHVM_METHOD(MongoClient, getHosts) {
+  Array ret;
+  ret.append("Not Implemented");
+  return ret;
+}
+
 static class mongoExtension : public Extension {
  public:
   mongoExtension() : Extension("mongo") {}
@@ -42,6 +56,10 @@ static class mongoExtension : public Extension {
     HHVM_FE(example_sum);
     HHVM_FE(hello_world);
     HHVM_FE(sum_all);
+
+    HHVM_ME(MongoClient, getConnections);
+    HHVM_ME(MongoClient, getHosts);
+
     loadSystemlib();
   }
 } s_mongo_extension;
