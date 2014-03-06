@@ -1,3 +1,0 @@
-DynamicExtensions {
-  example = /mongoExtension.so
-}
