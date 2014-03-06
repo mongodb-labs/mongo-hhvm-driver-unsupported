@@ -5,6 +5,11 @@ namespace HPHP {
 //////////////////////////////////////////////////////////////////////////////
 // class MongoClient
 
+static bool HHVM_METHOD(MongoClient, __construct, const String& connection, CArrRef options) {
+  std::cout << "Client started" << std::endl;
+  throw NotImplementedException("Not Implemented");
+}
+
 static bool HHVM_METHOD(MongoClient, close, CVarRef connection) {
   throw NotImplementedException("Not Implemented");
 }
@@ -60,6 +65,7 @@ static String HHVM_METHOD(MongoClient, __toString) {
 }
 
 void mongoExtension::_initMongoClientClass() {
+    HHVM_ME(MongoClient, __construct);
     HHVM_ME(MongoClient, close);
     HHVM_ME(MongoClient, connect);
     HHVM_ME(MongoClient, dropDB);
