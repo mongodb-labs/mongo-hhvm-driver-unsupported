@@ -23,10 +23,10 @@ Then the build proper:
 $ cd /path/to/extension
 $ $HPHP_HOME/hphp/tools/hphpize/hphpize
 $ cmake .
-$ make
+$ ./build.sh
 ~~~
 
-This will produce a `mongo.so` file, the dynamically-loadable extension. Alternatively, run build.sh from inside the extension folder.
+This will produce a `mongo.so` file, the dynamically-loadable extension. For now, please use the build script to make the files from inside the extension folder.
 
 To enable and test the extension, run ./test.sh.
 
