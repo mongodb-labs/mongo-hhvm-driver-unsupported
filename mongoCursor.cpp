@@ -11,7 +11,7 @@ static Object HHVM_METHOD(MongoCursor, awaitData, bool wait) {
 }
 
 static Object HHVM_METHOD(MongoCursor, batchSize, int64_t batchSize) {
-  throw NotImplementedException("Not Implemented");
+  throw NotImplementedException("Batch Size");
 }
 
 static void HHVM_METHOD(MongoCursor, __construct, CObjRef connection, const String& ns, CArrRef query, CArrRef fields) {

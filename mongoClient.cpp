@@ -7,7 +7,8 @@ namespace HPHP {
 
 static bool HHVM_METHOD(MongoClient, __construct, const String& connection, CArrRef options) {
   std::cout << "Client started" << std::endl;
-  throw NotImplementedException("Not Implemented");
+  return false;
+  //throw NotImplementedException("Not Implemented");
 }
 
 static bool HHVM_METHOD(MongoClient, close, CVarRef connection) {
