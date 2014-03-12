@@ -14,11 +14,6 @@ static Object HHVM_METHOD(MongoCursor, batchSize, int64_t batchSize) {
   throw NotImplementedException("Batch Size");
 }
 
-static void HHVM_METHOD(MongoCursor, __construct, CObjRef connection, const String& ns, CArrRef query, CArrRef fields) {
-  std::cout << "constructing dummy MongoCursor" << std::endl;
-  //throw NotImplementedException("Not Implemented");
-}
-
 static int64_t HHVM_METHOD(MongoCursor, count, bool foundOnly) {
   throw NotImplementedException("Not Implemented");
 }
@@ -131,7 +126,6 @@ void mongoExtension::_initMongoCursorClass() {
     HHVM_ME(MongoCursor, addOption);
     HHVM_ME(MongoCursor, awaitData);
     HHVM_ME(MongoCursor, batchSize);
-    HHVM_ME(MongoCursor, __construct);
     HHVM_ME(MongoCursor, count);
     HHVM_ME(MongoCursor, current);
     HHVM_ME(MongoCursor, dead);

@@ -87,11 +87,13 @@ class MongoCursor {
    *
    * @return  - Returns the new cursor.
    */
-  <<__Native>>
-  public function __construct(object $connection,
+  public function __construct(MongoClient $connection,
                               string $ns,
                               array $query = array(),
-                              array $fields = array()): void;
+                              array $fields = array()) {
+    
+    printf("Constructing MongoCursor");
+  }
 
   /**
    * Counts the number of results for this query
