@@ -1,0 +1,7 @@
+# Compiled Object files
+*.so
+*.txt
+cmake_install.cmake
+config.hdf
+CMakeFiles/
+
