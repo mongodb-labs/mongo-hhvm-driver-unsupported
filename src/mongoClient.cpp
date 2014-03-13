@@ -96,6 +96,36 @@ static String HHVM_METHOD(MongoClient, __toString) {
   //throw NotImplementedException("Not Implemented");
 }
 
+/* Test method that returns the server's version string */
+static String HHVM_METHOD(MongoClient, getServerVersion) {
+  bool result;
+  bson_t buildInfo, reply;
+  bson_error_t error;
+  bson_iter_t iter;
+  String retval;
+
+  auto client = get_client(this_);
+
+  bson_init(&buildInfo);
+  bson_append_int32(&buildInfo, "buildInfo", 9, 1);
+
+  result = mongoc_client_command_simple(client->get(), "test", &buildInfo, nullptr, &reply, &error);
+
+  bson_destroy(&buildInfo);
+
+  if ( ! result) {
+    throw Exception("Command error: %s", error.message);
+  }
+
+  if (bson_iter_init_find(&iter, &reply, "version")) {
+    retval = String(bson_iter_utf8(&iter, nullptr), CopyString);
+  }
+
+  bson_destroy(&reply);
+
+  return retval;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void mongoExtension::_initMongoClientClass() {
@@ -113,6 +143,7 @@ void mongoExtension::_initMongoClientClass() {
     HHVM_ME(MongoClient, selectDB);
     HHVM_ME(MongoClient, setReadPreference);
     HHVM_ME(MongoClient, __toString);
+    HHVM_ME(MongoClient, getServerVersion);
 }
 
 } //namespace HPHP

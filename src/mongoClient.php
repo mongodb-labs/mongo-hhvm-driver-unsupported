@@ -167,4 +167,11 @@ class MongoClient {
   <<__Native>>
   public function __toString(): string;
 
+  /**
+   * Test method that returns the server's version string
+   *
+   * @return string
+   */
+  <<__Native>>
+  public function getServerVersion(): string;
 }
