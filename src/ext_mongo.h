@@ -1,7 +1,7 @@
 #ifndef incl_HPHP_EXT_MONGO_H_
 #define incl_HPHP_EXT_MONGO_H_
 
-#include "hphp/runtime/base/base-includes.h"
+#include "mongo_common.h"
 
 namespace HPHP {
 

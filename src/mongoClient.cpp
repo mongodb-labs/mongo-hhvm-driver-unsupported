@@ -2,13 +2,44 @@
 
 namespace HPHP {
 
+const StaticString
+  s_mongoclient("MongoClient"),
+  s_mongoc_client("__mongoc_client");
+
+////////////////////////////////////////////////////////////////////////////////
+
+static Resource get_client_resource(Object obj) {
+  auto res = obj->o_realProp(s_mongoc_client, ObjectData::RealPropUnchecked, s_mongoclient);
+
+  if (!res || !res->isResource()) {
+    return null_resource;
+  }
+
+  return res->toResource();
+}
+
+static MongocClient *get_client(Object obj) {
+  auto res = get_client_resource(obj);
+
+  return res.getTyped<MongocClient>(true, false);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoClient
 
-static bool HHVM_METHOD(MongoClient, __construct, const String& connection, CArrRef options) {
-  std::cout << "Client started" << std::endl;
-  return false;
-  //throw NotImplementedException("Not Implemented");
+static void HHVM_METHOD(MongoClient, __construct, const String& uri, CArrRef options) {
+  MongocClient *client = MongocClient::GetPersistent(uri);
+
+  if (client == nullptr) {
+    client = new MongocClient(uri);
+  }
+
+  if (client->isInvalid()) {
+    throw Exception("Unable to connect: %s", uri.c_str());
+  }
+
+  MongocClient::SetPersistent(uri, client);
+  this_->o_set(s_mongoc_client, client, s_mongoclient);
 }
 
 static bool HHVM_METHOD(MongoClient, close, CVarRef connection) {
