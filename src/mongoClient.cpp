@@ -1,8 +1,8 @@
-#include "mongoCreator.h"
+#include "ext_mongo.h"
 
 namespace HPHP {
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // class MongoClient
 
 static bool HHVM_METHOD(MongoClient, __construct, const String& connection, CArrRef options) {
@@ -64,6 +64,8 @@ static String HHVM_METHOD(MongoClient, __toString) {
   return s;
   //throw NotImplementedException("Not Implemented");
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void mongoExtension::_initMongoClientClass() {
     HHVM_ME(MongoClient, __construct);
