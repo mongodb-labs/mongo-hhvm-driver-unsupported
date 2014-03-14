@@ -11,7 +11,7 @@ class MongoClient {
 
   <<__Native>>
   public function __construct (string $server = "mongodb://localhost:27017", 
-                                array $options = array("connect" => TRUE)): bool;
+                                array $options = array('connect' => true)): void;
 
   /**
    * Closes this connection
@@ -167,4 +167,11 @@ class MongoClient {
   <<__Native>>
   public function __toString(): string;
 
+  /**
+   * Test method that returns the server's version string
+   *
+   * @return string
+   */
+  <<__Native>>
+  public function getServerVersion(): string;
 }

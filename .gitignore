@@ -1,0 +1,10 @@
+CMakeCache.txt
+CMakeFiles
+CMakeLists.txt
+cmake_install.cmake
+Makefile
+*.so
+
+# This file is concatenated from other PHP source files at build time
+mongo.php
+

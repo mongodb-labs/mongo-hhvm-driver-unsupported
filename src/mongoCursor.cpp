@@ -1,4 +1,5 @@
-#include "mongoCreator.h"
+#include <iostream>
+#include "ext_mongo.h"
 
 namespace HPHP {
 
@@ -127,6 +128,8 @@ static bool HHVM_METHOD(MongoCursor, valid) {
   throw NotImplementedException("Not Implemented");
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void mongoExtension::_initMongoCursorClass() {
     HHVM_ME(MongoCursor, addOption);
     HHVM_ME(MongoCursor, awaitData);
@@ -160,4 +163,5 @@ void mongoExtension::_initMongoCursorClass() {
     HHVM_ME(MongoCursor, timeout);
     HHVM_ME(MongoCursor, valid);
 }
+
 } // namespace HPHP
