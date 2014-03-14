@@ -9,38 +9,10 @@
  */
 class MongoClient {
 
-  //PHP driver version. May be suffixed with "dev", "+" or "-" if it is in-between versions. 
-  const VERSION = ""; 
-  const DEFAULT_HOST = "localhost" ;
-  const DEFAULT_PORT = 27017 ;
-  const RP_PRIMARY = "primary" ;
-  const RP_PRIMARY_PREFERRED = "primaryPreferred" ;
-  const RP_SECONDARY = "secondary" ;
-  const RP_SECONDARY_PREFERRED = "secondaryPreferred" ;
-  const RP_NEAREST = "nearest" ;
-
-  /* Properties */
-  public $connected = FALSE ;
-  public $status = NULL ;
-  protected $server = NULL ;
-  protected $persistent = NULL ;
-
-  private $options;
-  private $host;
-  private $port;
-
-  //php construct so that will return newly allocated object appropriately
-  public function __construct (string $server = "mongodb://localhost:27017", 
-                                array $options = array("connect" => TRUE)) {
-    printf("Constructing new MongoClient\n");
-    $this->construct_cpp($server, $options);
-  }
-
-  //start the connection etc using C driver
   <<__Native>>
-  public function construct_cpp (string $server = "mongodb://localhost:27017", 
-                                array $options = array("connect" => TRUE)): bool;
-  
+  public function __construct (string $server = "mongodb://localhost:27017", 
+                                array $options = array('connect' => true)): void;
+
   /**
    * Closes this connection
    *
@@ -195,4 +167,11 @@ class MongoClient {
   <<__Native>>
   public function __toString(): string;
 
+  /**
+   * Test method that returns the server's version string
+   *
+   * @return string
+   */
+  <<__Native>>
+  public function getServerVersion(): string;
 }

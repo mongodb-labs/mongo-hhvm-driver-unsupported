@@ -17,6 +17,9 @@ Firstly, ensure that the `$HPHP_HOME` env var has been set:
 export HPHP_HOME=/path/to/hhvm
 ~~~~
 
+Secondly, ensure that libmongoc is installed. Instructions for installing
+libmongoc may be found [here](https://github.com/mongodb/mongo-c-driver#fetch-sources-and-build).
+
 Then the build proper:
 
 ~~~

@@ -92,7 +92,7 @@ class MongoCursor {
                               array $query = array(),
                               array $fields = array()) {
     
-    printf("Constructing MongoCursor");
+    printf("Constructing MongoCursor\n");
   }
 
   /**
