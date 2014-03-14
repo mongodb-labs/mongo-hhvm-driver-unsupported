@@ -9,44 +9,45 @@
  * precision beyond milliseconds will be lost when the document is sent
  * to/from the database.
  */
-class MongoDate {
 
-  /* Fields */
-  public int $sec;
-  public int $usec;
+class MongoDate
+{
+	/**
+	* @var int
+	*/
+	public $sec ;
 
-  private int $msec;
-  /**
-   * Creates a new date.
-   *
-   * @param int $sec - sec    Number of seconds since January 1st, 1970.
-   * @param int $usec - usec    Microseconds. Please be aware though that
-   *   MongoDB's resolution is milliseconds and not microseconds, which
-   *   means this value will be truncated to millisecond resolution.
-   *
-   * @return  - Returns this new date.
-   */
-  public function __construct(int $sec = 0,
-                              int $usec = 0): void {
-    if ($sec == 0) {
-      $this->sec = time();
-    } else {
-      $this->sec = $sec;
-    }
-    
-    $this->usec = ((int) ($usec/1000))*1000;
-    $this->msec = 1000*($this->sec) + 1000*($this->usec);
-  }
+	/**
+	* @var int
+	*/
+	public $usec ;
 
-  /**
-   * Returns a string representation of this date
-   *
-   * @return string - This date.
-   */
-  public function __toString(): string {
-    $seconds = (int) ($this->msec/1000);
-    $milliseconds = ($this->msec) - $seconds*1000;
+	/**
+	* Creates a new date.
+	*
+	* @param int $sec - Number of seconds since January 1st, 1970.
+	* @param int $usec - Microseconds. Please be aware though that
+	* MongoDB's resolution is milliseconds and not microseconds, which
+	* means this value will be truncated to millisecond resolution.
+	*
+	* @return - Returns this new date.
+	*/
+	public function __construct($sec = -1, $usec = 0) {
+		if ($sec < 0) {
+				$this->sec = time();
+		} else {
+				$this->sec = $sec;
+		}
 
-    return sprintf("%d %d", $milliseconds, $seconds);
-  }
+		$this->usec = $usec;
+	}
+
+	/**
+	* Returns a string representation of this date
+	*
+	* @return string - This date.
+	*/
+	public function __toString() {
+		return (string) $this->sec . ' ' . $this->usec;
+	}
 }
