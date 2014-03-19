@@ -49,8 +49,9 @@ static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, cons
   //build bson object for query (currently allow only string-string key-value pairs)
   bson_t query_bs;
   bson_init(&query_bs);
-  bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")], 1);
-  MongocCursor *cursor = new MongocCursor(connection, ns, MONGOC_QUERY_NONE, 0, 1, 1, false, &query_bs, NULL, NULL);
+  bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")].toStrRef().c_str(), 1);
+  //TODO: how to get the mongoc_client_t type object from connection?
+  MongocCursor *cursor = new MongocCursor(connection.get(), ns, MONGOC_QUERY_NONE, 0, 1, 1, false, &query_bs, NULL, NULL);
   this_->o_set(s_mongoc_cursor, client, s_mongocursor);
   bson_destroy(&query_bs);
 }
