@@ -3,6 +3,31 @@
 
 namespace HPHP {
 
+const StaticString
+  s_mongocursor("MongoCursor"),
+  s_mongoc_cursor("__mongoc_cursor");
+
+////////////////////////////////////////////////////////////////////////////////
+
+static Resource get_cursor_resource(Object obj) {
+  auto res = obj->o_realProp(s_mongoc_cursor, ObjectData::RealPropUnchecked, s_mongocursor);
+
+  if (!res || !res->isResource()) {
+    return null_resource;
+  }
+
+  return res->toResource();
+}
+
+static MongocCursor *get_cursor(Object obj) {
+  auto res = get_cursor_resource(obj);
+
+  return res.getTyped<MongocCursor>(true, false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// class MongoCursor
+
 static Object HHVM_METHOD(MongoCursor, addOption, const String& key, CVarRef value) {
   throw NotImplementedException("Not Implemented");
 }
@@ -15,9 +40,19 @@ static Object HHVM_METHOD(MongoCursor, batchSize, int64_t batchSize) {
   throw NotImplementedException("Batch Size");
 }
 
-static void HHVM_METHOD(MongoCursor, __construct, CObjRef connection, const String& ns, CArrRef query, CArrRef fields) {
-  std::cout << "constructing dummy MongoCursor" << std::endl;
-  //throw NotImplementedException("Not Implemented");
+static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields) {
+  //Note: all other parameter values are taken from https://github.com/mongodb/mongo-c-driver/blob/3104b0b2c6fce06c1fe0d87e2b3b7bd107574fc2/tests/test-mongoc-cursor.c#L81
+  //TODO: you need to turn PHP values into BSON to construct the C cursor with query and project objects.
+  //bson_append_value: https://github.com/mongodb/libbson/blob/d1559673630cd754f4da1f12d7e7f9796d7e5d95/tests/test-value.c#L73
+  //bson_append_utf8
+
+  //build bson object for query (currently allow only string-string key-value pairs)
+  bson_t query_bs;
+  bson_init(&query_bs);
+  bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")], 1);
+  MongocCursor *cursor = new MongocCursor(connection, ns, MONGOC_QUERY_NONE, 0, 1, 1, false, &query_bs, NULL, NULL);
+  this_->o_set(s_mongoc_cursor, client, s_mongocursor);
+  bson_destroy(&query_bs);
 }
 
 static int64_t HHVM_METHOD(MongoCursor, count, bool foundOnly) {

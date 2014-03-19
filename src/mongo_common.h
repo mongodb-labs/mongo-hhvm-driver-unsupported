@@ -3,6 +3,7 @@
 
 #include "hphp/runtime/base/base-includes.h"
 #include "mongoc.h"
+#include "mongoc-cursor-private.h"  //TODO: this is not working
 
 namespace HPHP {
 
