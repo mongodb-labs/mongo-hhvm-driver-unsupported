@@ -8,4 +8,5 @@ fi
 
 ${HPHP_HOME}/hphp/hhvm/hhvm \
   -vDynamicExtensions.0=${DIRNAME}/mongo.so \
-  ${DIRNAME}/test/mongoTest.php
+  /usr/local/bin/phpunit ${DIRNAME}/test
+
