@@ -7,6 +7,12 @@
 
 namespace HPHP {
 
+const StaticString
+  s_mongoclient("MongoClient"),
+  s_mongoc_client("__mongoc_client");
+
+////////////////////////////////////////////////////////////////////////////////
+
 class MongocClient : public SweepableResourceData {
 public:
   static MongocClient *GetPersistent(const String& uri);
@@ -32,6 +38,18 @@ private:
   mongoc_client_t *m_client;
 
 };
+
+MongocClient *get_client(Object obj);
+
+
+
+
+
+const StaticString
+  s_mongocursor("MongoCursor"),
+  s_mongoc_cursor("__mongoc_cursor");
+
+////////////////////////////////////////////////////////////////////////////////
 
 class MongocCursor : public SweepableResourceData {
 public:
@@ -60,6 +78,8 @@ private:
   mongoc_cursor_t *m_cursor;
 
 };
+
+MongocCursor *get_cursor(Object obj);
 
 }
 

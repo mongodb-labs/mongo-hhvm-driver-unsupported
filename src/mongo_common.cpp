@@ -4,6 +4,24 @@ namespace HPHP {
 
 ////////MongocClient
 
+////////////////////////////////////////////////////////////////////////////////
+
+Resource get_client_resource(Object obj) {
+  auto res = obj->o_realProp(s_mongoc_client, ObjectData::RealPropUnchecked, s_mongoclient);
+
+  if (!res || !res->isResource()) {
+    return null_resource;
+  }
+
+  return res->toResource();
+}
+
+MongocClient *get_client(Object obj) {
+  auto res = get_client_resource(obj);
+
+  return res.getTyped<MongocClient>(true, false);
+}
+
 MongocClient *MongocClient::GetPersistent(const String& uri) {
   return GetCachedImpl("mongo::persistent_clients", uri);
 }
@@ -31,6 +49,24 @@ MongocClient::~MongocClient() {
 }
 
 ////////MongocCursor
+
+////////////////////////////////////////////////////////////////////////////////
+
+Resource get_cursor_resource(Object obj) {
+  auto res = obj->o_realProp(s_mongoc_cursor, ObjectData::RealPropUnchecked, s_mongocursor);
+
+  if (!res || !res->isResource()) {
+    return null_resource;
+  }
+
+  return res->toResource();
+}
+
+MongocCursor *get_cursor(Object obj) {
+  auto res = get_cursor_resource(obj);
+
+  return res.getTyped<MongocCursor>(true, false);
+}
 
 MongocCursor::MongocCursor(mongoc_client_t           *client,
                 const char                *db_and_collection,

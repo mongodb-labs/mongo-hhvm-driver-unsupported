@@ -1,29 +1,8 @@
 #include <iostream>
 #include "ext_mongo.h"
+#include "mongo_common.h"
 
 namespace HPHP {
-
-const StaticString
-  s_mongocursor("MongoCursor"),
-  s_mongoc_cursor("__mongoc_cursor");
-
-////////////////////////////////////////////////////////////////////////////////
-
-static Resource get_cursor_resource(Object obj) {
-  auto res = obj->o_realProp(s_mongoc_cursor, ObjectData::RealPropUnchecked, s_mongocursor);
-
-  if (!res || !res->isResource()) {
-    return null_resource;
-  }
-
-  return res->toResource();
-}
-
-static MongocCursor *get_cursor(Object obj) {
-  auto res = get_cursor_resource(obj);
-
-  return res.getTyped<MongocCursor>(true, false);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoCursor
@@ -49,11 +28,15 @@ static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, cons
   //build bson object for query (currently allow only string-string key-value pairs)
   bson_t query_bs;
   bson_init(&query_bs);
-  bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")].toStrRef().c_str(), 1);
+  bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")].toString().c_str(), 1);
   //TODO: how to get the mongoc_client_t type object from connection?
-  MongocCursor *cursor = new MongocCursor(connection.get(), ns, MONGOC_QUERY_NONE, 0, 1, 1, false, &query_bs, NULL, NULL);
-  this_->o_set(s_mongoc_cursor, client, s_mongocursor);
+  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 1, 1, false, &query_bs, NULL, NULL);
+  this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
+
+  if (cursor == NULL) {
+    throw NotImplementedException("NULL pointer");
+  }
 }
 
 static int64_t HHVM_METHOD(MongoCursor, count, bool foundOnly) {
