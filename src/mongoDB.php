@@ -1,12 +1,7 @@
 <?hh
 
 /**
- * Instances of this class are used to interact with a database. To get a
- * database:  Selecting a database     Database names can use almost any
- * character in the ASCII range. However, they cannot contain , . or be the
- * empty string. The name "system" is also reserved.   A few unusual, but
- * valid, database names: null, [x,y], 3, \, /.   Unlike collection names,
- * database names may contain $.
+ * Instances of this class are used to interact with a database.
  */
 class MongoDB {
   
@@ -32,16 +27,11 @@ class MongoDB {
    * Execute a database command
    *
    * @param array $command - command    The query to send.
-   * @param array $options - options    This parameter is an associative
-   *   array of the form array("optionname" => boolean, ...). Currently
-   *   supported options are:
+   * @param array $options - options    
    *
    * @return array - Returns database response. Every database response
    *   is always maximum one document, which means that the result of a
-   *   database command can never exceed 16MB. The resulting document's
-   *   structure depends on the command, but most results will have the ok
-   *   field to indicate success or failure and results containing an array
-   *   of each of the resulting documents.
+   *   database command can never exceed 16MB.
    */
   <<__Native>>
   public function command(array $command,
@@ -73,15 +63,7 @@ class MongoDB {
    * @param array $options - options    An array containing options for
    *   the collections. Each option is its own element in the options
    *   array, with the option name listed below being the key of the
-   *   element. The supported options depend on the MongoDB server version.
-   *   At the moment, the following options are supported:      capped  
-   *   If the collection should be a fixed size.      size    If the
-   *   collection is fixed size, its size in bytes.      max    If the
-   *   collection is fixed size, the maximum number of elements to store in
-   *   the collection.      autoIndexId    If capped is TRUE you can
-   *   specify FALSE to disable the automatic index created on the _id
-   *   field. Before MongoDB 2.2, the default value for autoIndexId was
-   *   FALSE.
+   *   element. 
    *
    * @return MongoCollection - Returns a collection object representing
    *   the new collection.

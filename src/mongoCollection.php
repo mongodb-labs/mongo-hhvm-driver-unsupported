@@ -2,11 +2,7 @@
 
 /**
  * Represents a MongoDB collection.   Collection names can use any character
- * in the ASCII set. Some valid collection names are , ..., my collection, and
- * *#@.   User-defined collection names cannot contain the $ symbol. There are
- * certain system collections which use a $ in their names (e.g.,
- * local.oplog.$main), but it is a reserved character. If you attempt to
- * create and use a collection with a $ in the name, MongoDB will assert.
+ * in the ASCII set. 
  */
 class MongoCollection {
 
@@ -40,22 +36,8 @@ class MongoCollection {
    * @param array $a - a    An array of arrays or objects. If any objects
    *   are used, they may not have protected or private properties.    If
    *   the documents to insert do not have an _id key or property, a new
-   *   MongoId instance will be created and assigned to it. See
-   *   MongoCollection::insert() for additional information on this
-   *   behavior.
+   *   MongoId instance will be created and assigned to it. 
    * @param array $options - options    Options for the inserts.  
-   *   "continueOnError"   Boolean, defaults to FALSE. If set, the database
-   *   will not stop processing a bulk insert if one fails (eg due to
-   *   duplicate IDs). This makes bulk insert behave similarly to a series
-   *   of single inserts, except that calling MongoDB::lastError() will
-   *   have an error set if any insert fails, not just the last one. If
-   *   multiple errors occur, only the most recent will be reported by
-   *   MongoDB::lastError().    Please note that continueOnError affects
-   *   errors on the database side only. If you try to insert a document
-   *   that has errors (for example it contains a key with an empty name),
-   *   then the document is not even transferred to the database as the
-   *   driver detects this error and bails out. continueOnError has no
-   *   effect on errors detected in the documents by the driver.
    *
    * @return mixed - If the w parameter is set to acknowledge the write,
    *   returns an associative array with the status of the inserts ("ok")
@@ -148,39 +130,10 @@ class MongoCollection {
    *
    * @param string|array $key|keys -
    * @param array $options - options    This parameter is an associative
-   *   array of the form array("optionname" => boolean, ...). Currently
-   *   supported options are:    "unique"   Create a unique index.    A
-   *   unique index cannot be created on a field if multiple existing
-   *   documents do not contain the field. The field is effectively NULL
-   *   for these documents and thus already non-unique. Sparse indexing may
-   *   be used to overcome this, since it will prevent documents without
-   *   the field from being indexed.      "dropDups"   If a unique index is
-   *   being created and duplicate values exist, drop all but one duplicate
-   *   value.     "sparse"   Create a sparse index, which only includes
-   *   documents containing the field. This option is only compatible with
-   *   single-field indexes.     "expireAfterSeconds"   The value of this
-   *   option should specify the number of seconds after which a document
-   *   should be considered expired and automatically removed from the
-   *   collection. This option is only compatible with single-field indexes
-   *   where the field will contain MongoDate values.   This feature is
-   *   available in MongoDB 2.2+. See Expire Data from Collections by
-   *   Setting TTL for more information.     "background"   By default,
-   *   index creation is a blocking operation and will stop other
-   *   operations on the database from proceeding until completed. If you
-   *   specify TRUE for this option, the index will be created in the
-   *   background while other operations are taking place.    Prior to
-   *   MongoDB 2.1.0, the index build operation is not a background build
-   *   when it replicates to secondaries, irrespective of this option. See
-   *   Building Indexes with Replica Sets for more information.      "name"
-   *     This option allows you to override the algorithm that the driver
-   *   uses to create an index name and specify your own. This can be
-   *   useful if you are indexing many keys and Mongo complains about the
-   *   index name being too long.
+   *   array of the form array("optionname" => boolean, ...). 
    *
    * @return bool - Returns an array containing the status of the index
-   *   creation if the "w" option is set. Otherwise, returns TRUE.   Fields
-   *   in the status array are described in the documentation for
-   *   MongoCollection::insert().
+   *   creation if the "w" option is set. Otherwise, returns TRUE.
    */
   <<__Native>>
   public function ensureIndex(mixed $key,
@@ -191,12 +144,7 @@ class MongoCollection {
    *   for the result set
    *
    * @param array $query - query    The fields for which to search.
-   *   MongoDB's query language is quite extensive. The PHP driver will in
-   *   almost all cases pass the query straight through to the server, so
-   *   reading the MongoDB core docs on find is a good idea.    Please make
-   *   sure that for all special query operators (starting with $) you use
-   *   single quotes so that PHP doesn't try to replace "$exists" with the
-   *   value of the variable $exists.
+
    * @param array $fields - fields    Fields of the results to return.
    *   The array is in the format array('fieldname' => true, 'fieldname2'
    *   => true). The _id field is always returned.
@@ -228,12 +176,6 @@ class MongoCollection {
    * Queries this collection, returning a single element
    *
    * @param array $query - query    The fields for which to search.
-   *   MongoDB's query language is quite extensive. The PHP driver will in
-   *   almost all cases pass the query straight through to the server, so
-   *   reading the MongoDB core docs on find is a good idea.    Please make
-   *   sure that for all special query operaters (starting with $) you use
-   *   single quotes so that PHP doesn't try to replace "$exists" with the
-   *   value of the variable $exists.
    * @param array $fields - fields    Fields of the results to return.
    *   The array is in the format array('fieldname' => true, 'fieldname2'
    *   => true). The _id field is always returned.
@@ -273,8 +215,7 @@ class MongoCollection {
    *   describes an index. Elements will contain the values name for the
    *   name of the index, ns for the namespace (a combination of the
    *   database and collection name), and key for a list of all fields in
-   *   the index and their ordering. Additional values may be present for
-   *   special indexes, such as unique or sparse.
+   *   the index and their ordering.
    */
   <<__Native>>
   public function getIndexInfo(): array;
@@ -308,19 +249,13 @@ class MongoCollection {
    *
    * @param mixed $keys - keys    Fields to group by. If an array or
    *   non-code object is passed, it will be the key used to group results.
-   *    1.0.4+: If keys is an instance of MongoCode, keys will be treated
-   *   as a function that returns the key to group by (see the "Passing a
-   *   keys function" example below).
    * @param array $initial - initial    Initial value of the aggregation
    *   counter object.
    * @param mongocode $reduce - reduce    A function that takes two
    *   arguments (the current document and the aggregation to this point)
    *   and does the aggregation.
    * @param array $options - options    Optional parameters to the group
-   *   command. Valid options include:     "condition"   Criteria for
-   *   including a document in the aggregation.     "finalize"   Function
-   *   called once per unique key that takes the final output of the reduce
-   *   function.
+   *   command.
    *
    * @return array - Returns an array containing the result.
    */
@@ -336,36 +271,13 @@ class MongoCollection {
    * @param array|object $a - a    An array or object. If an object is
    *   used, it may not have protected or private properties.    If the
    *   parameter does not have an _id key or property, a new MongoId
-   *   instance will be created and assigned to it. This special behavior
-   *   does not mean that the parameter is passed by reference.
+   *   instance will be created and assigned to it.
    * @param array $options - options    Options for the insert.
    *
    * @return bool|array - Returns an array containing the status of the
    *   insertion if the "w" option is set. Otherwise, returns TRUE if the
    *   inserted array is not empty (a MongoException will be thrown if the
-   *   inserted array is empty).   If an array is returned, the following
-   *   keys may be present:    ok    This should almost always be 1 (unless
-   *   last_error itself failed).      err    If this field is non-null, an
-   *   error occurred on the previous operation. If this field is set, it
-   *   will be a string describing the error that occurred.      code    If
-   *   a database error occurred, the relevant error code will be passed
-   *   back to the client.      errmsg    This field is set if something
-   *   goes wrong with a database command. It is coupled with ok being 0.
-   *   For example, if w is set and times out, errmsg will be set to "timed
-   *   out waiting for slaves" and ok will be 0. If this field is set, it
-   *   will be a string describing the error that occurred.      n    If
-   *   the last operation was an update, upsert, or a remove, the number of
-   *   documents affected will be returned. For insert operations, this
-   *   value is always 0.      wtimeout    If the previous option timed out
-   *   waiting for replication.      waited    How long the operation
-   *   waited before timing out.      wtime    If w was set and the
-   *   operation succeeded, how long it took to replicate to w servers.   
-   *    upserted    If an upsert occurred, this field will contain the new
-   *   record's _id field. For upserts, either this field or
-   *   updatedExisting will be present (unless an error occurred).    
-   *   updatedExisting    If an upsert updated an existing element, this
-   *   field will be true. For upserts, either this field or upserted will
-   *   be present (unless an error occurred).
+   *   inserted array is empty). 
    */
   <<__Native>>
   public function insert(mixed $a,
@@ -380,9 +292,7 @@ class MongoCollection {
    *    Remove at most one record matching this criteria.
    *
    * @return bool|array - Returns an array containing the status of the
-   *   removal if the "w" option is set. Otherwise, returns TRUE.   Fields
-   *   in the status array are described in the documentation for
-   *   MongoCollection::insert().
+   *   removal if the "w" option is set. Otherwise, returns TRUE.
    */
   <<__Native>>
   public function remove(array $criteria = array(),
@@ -394,9 +304,7 @@ class MongoCollection {
    * @param array|object $a - a    Array or object to save. If an object
    *   is used, it may not have protected or private properties.    If the
    *   parameter does not have an _id key or property, a new MongoId
-   *   instance will be created and assigned to it. See
-   *   MongoCollection::insert() for additional information on this
-   *   behavior.
+   *   instance will be created and assigned to it.
    * @param array $options - options    Options for the save.
    *
    * @return mixed - If w was set, returns an array containing the status
@@ -458,27 +366,10 @@ class MongoCollection {
    *   update.
    * @param array $new_object - new_object    The object with which to
    *   update the matching records.
-   * @param array $options - options    This parameter is an associative
-   *   array of the form array("optionname" => boolean, ...). Currently
-   *   supported options are:    "upsert"   If no document matches
-   *   $criteria, a new document will be inserted.   If a new document
-   *   would be inserted and $new_object contains atomic modifiers (i.e. $
-   *   operators), those operations will be applied to the $criteria
-   *   parameter to create the new document. If $new_object does not
-   *   contain atomic modifiers, it will be used as-is for the inserted
-   *   document. See the upsert examples below for more information.   
-   *   "multiple"   All documents matching $criteria will be updated.
-   *   MongoCollection::update() has exactly the opposite behavior of
-   *   MongoCollection::remove(): it updates one document by default, not
-   *   all matching documents. It is recommended that you always specify
-   *   whether you want to update multiple documents or a single document,
-   *   as the database may change its default behavior at some point in the
-   *   future.
+   * @param array $options - options   
    *
    * @return bool|array - Returns an array containing the status of the
-   *   update if the "w" option is set. Otherwise, returns TRUE.   Fields
-   *   in the status array are described in the documentation for
-   *   MongoCollection::insert().
+   *   update if the "w" option is set. Otherwise, returns TRUE.
    */
   <<__Native>>
   public function update(array $criteria,
