@@ -1,4 +1,5 @@
 #include "mongo_common.h"
+#include <string>
 
 namespace HPHP {
 
@@ -78,29 +79,28 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
                 const bson_t              *query,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs) {
-  //m_cursor = _mongoc_cursor_new(client, db_and_collection, flags, skip, limit, batch_size,
-  //                            is_command, query, fields, read_prefs);
-  const char *db_name;
-  const char *collection_name;
-  const char dot[] = ".";
-  mongoc_collection_t *collection;
-
-  char *db_and_collection_mutable = strdupa(db_and_collection);
-  db_name = strsep(&db_and_collection_mutable, dot);
-  collection_name = db_and_collection_mutable;
-  //collection_name = strchr(db_and_collection, '.');
-  //collection_name = collection_name + 1;
+  std::string db_name;
+  std::string collection_name;
   
-  //See https://github.com/mongodb/mongo-php-driver/blob/6316dc9d36a212a0ff983543530dce76a3f2b91c/cursor_shared.c#L440 for checking valid namespace
-  collection = mongoc_client_get_collection (client, db_name, collection_name);
+  std::string *db_and_collection_str = new std::string(db_and_collection);
+
+  //namespace format: db.collection
+  size_t dot_pos;
+  dot_pos = db_and_collection_str->find_first_of( ".", 0 );
+  db_name = db_and_collection_str->substr( 0, dot_pos );
+  collection_name = db_and_collection_str->substr( dot_pos+1, std::string::npos );
+
+  mongoc_collection_t *collection;
+  
+  collection = mongoc_client_get_collection (client, db_name.c_str(), collection_name.c_str());
   m_cursor = mongoc_collection_find (collection,
                                     flags,
                                     skip,
                                    	limit,
                                     batch_size,
                                     query,
-                                    fields,  /* Fields, NULL for all. */
-                                    read_prefs); /* Read Prefs, NULL for default */
+                                    fields,
+                                    read_prefs);
   mongoc_collection_destroy (collection);
 }
 

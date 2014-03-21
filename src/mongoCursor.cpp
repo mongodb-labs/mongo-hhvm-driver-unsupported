@@ -1,6 +1,5 @@
 #include <iostream>
 #include "ext_mongo.h"
-#include "mongo_common.h"
 
 namespace HPHP {
 
@@ -21,16 +20,15 @@ static Object HHVM_METHOD(MongoCursor, batchSize, int64_t batchSize) {
 
 static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields) {
   //Note: all other parameter values are taken from https://github.com/mongodb/mongo-c-driver/blob/3104b0b2c6fce06c1fe0d87e2b3b7bd107574fc2/tests/test-mongoc-cursor.c#L81
-  //TODO: you need to turn PHP values into BSON to construct the C cursor with query and project objects.
-  //bson_append_value: https://github.com/mongodb/libbson/blob/d1559673630cd754f4da1f12d7e7f9796d7e5d95/tests/test-value.c#L73
-  //bson_append_utf8
+  //Might be more preferable to use bson_append_value: https://github.com/mongodb/libbson/blob/d1559673630cd754f4da1f12d7e7f9796d7e5d95/tests/test-value.c#L73
 
   //build bson object for query (currently allow only string-string key-value pairs)
   bson_t query_bs;
   bson_init(&query_bs);
   bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")].toString().c_str(), 1);
-  //TODO: how to get the mongoc_client_t type object from connection?
+
   MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 1, 1, false, &query_bs, NULL, NULL);
+
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
 

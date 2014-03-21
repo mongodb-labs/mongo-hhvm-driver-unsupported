@@ -1,5 +1,4 @@
 #include "ext_mongo.h"
-#include "mongo_common.h"
 
 namespace HPHP {
 
