@@ -1,24 +1,22 @@
 <?hh
 
 /**
- * A cursor is used to iterate through the results of a database query. For
- * example, to query the database and see all results, you could do:
- * MongoCursor basic usage       You don't generally create cursors using the
- * MongoCursor constructor, you get a new cursor by calling
- * MongoCollection::find() (as shown above).   Suppose that, in the example
- * above, $collection was a 50GB collection. We certainly wouldn't want to
- * load that into memory all at once, which is what a cursor is for: allowing
- * the client to access the collection in dribs and drabs.   If we have a
- * large result set, we can iterate through it, loading a few megabytes of
- * results into memory at a time. For example, we could do:  Iterating over
- * MongoCursor     This will go through each document in the collection,
- * loading and garbage collecting documents as needed.   Note that this means
- * that a cursor does not "contain" the database results, it just manages
- * them. Thus, if you print a cursor (with, say, var_dump() or print_r()),
- * you'll just get the cursor object, not your documents. To get the documents
- * themselves, you can use one of the methods shown above.
+ * A cursor is used to iterate through the results of a database query.
+ * A cursor does not "contain" the database results, it just manages them.
  */
 class MongoCursor {
+
+  /* variables */
+
+  private $batchSize = 100;
+  private $fields = [];
+  private $query = [];
+  private $queryLimit = 0;
+  private $querySkip = 0;
+  private $queryTimeout = null;
+  private $started_iterating = false;
+  private $tailable = false;
+
   /**
    * Adds a top-level key/value pair to a query
    *
@@ -47,35 +45,20 @@ class MongoCursor {
    * Limits the number of elements returned in one batch.
    *
    * @param int $batchSize - batchSize    The number of results to return
-   *   per batch. Each batch requires a round-trip to the server.   If
-   *   batchSize is 2 or more, it represents the size of each batch of
-   *   objects retrieved. It can be adjusted to optimize performance and
-   *   limit data transfer.   If batchSize is 1 or negative, it will limit
+   *   per batch. If batchSize is 2 or more, it represents the size of each batch of
+   *   objects retrieved. If batchSize is 1 or negative, it will limit
    *   of number returned documents to the absolute value of batchSize, and
-   *   the cursor will be closed. For example if batchSize is -10, then the
-   *   server will return a maximum of 10 documents and as many as can fit
-   *   in 4MB, then close the cursor.    A batchSize of 1 is special, and
-   *   means the same as -1, i.e. a value of 1 makes the cursor only
-   *   capable of returning one document.    Note that this feature is
-   *   different from MongoCursor::limit() in that documents must fit
-   *   within a maximum size, and it removes the need to send a request to
-   *   close the cursor server-side. The batch size can be changed even
+   *   the cursor will be closed. The batch size can be changed even
    *   after a cursor is iterated, in which case the setting will apply on
-   *   the next batch retrieval.   This cannot override MongoDB's limit on
-   *   the amount of data it will return to the client (i.e., if you set
-   *   batch size to 1,000,000,000, MongoDB will still only return 4-16MB
-   *   of results per batch).   To ensure consistent behavior, the rules of
-   *   MongoCursor::batchSize() and MongoCursor::limit() behave a little
-   *   complex but work "as expected". The rules are: hard limits override
-   *   soft limits with preference given to MongoCursor::limit() over
-   *   MongoCursor::batchSize(). After that, whichever is set and lower
-   *   than the other will take precedence. See below. section for some
-   *   examples.
+   *   the next batch retrieval.
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function batchSize(int $batchSize): object;
+  public function batchSize(int $batchSize) {
+    //TODO: Handle non-positive batch size
+    $this->batchSize = $batchSize;
+    return $this;
+  }
 
   /**
    * Create a new cursor
@@ -87,11 +70,13 @@ class MongoCursor {
    *
    * @return  - Returns the new cursor.
    */
-  <<__Native>>
-  public function __construct(object $connection,
+  public function __construct(MongoClient $connection,
                               string $ns,
                               array $query = array(),
-                              array $fields = array()): void;
+                              array $fields = array()) {
+    
+    printf("Constructing MongoCursor\n");
+  }
 
   /**
    * Counts the number of results for this query
@@ -146,8 +131,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function fields(array $f): object;
+  public function fields(array $fields) {
+    $this->fields = $fields;
+    return $this;
+  }
 
   /**
    * Return the next object to which this cursor points, and advance the
@@ -155,8 +142,12 @@ class MongoCursor {
    *
    * @return array - Returns the next object.
    */
-  <<__Native>>
-  public function getNext(): array;
+  public function getNext(): array {
+    $current_record = $this->current();
+    $this->next();
+
+    return $record;
+  }
 
   /**
    * Get the read preference for this query
@@ -223,8 +214,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function limit(int $num): object;
+  public function limit(int $num) {
+    $this->queryLimit = $num;
+    return $this;
+  }
 
   /**
    * Advances the cursor to the next result
@@ -296,8 +289,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function skip(int $num): object;
+  public function skip(int $num) {
+    $this->querySkip = $num;
+    return $this;
+  }
 
   /**
    * Sets whether this query can be done on a secondary
@@ -314,8 +309,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function snapshot(): object;
+  public function snapshot() {
+    $this->query['$snapshot'] = true;
+    return $this;
+  }
 
   /**
    * Sorts the results by given fields
@@ -324,15 +321,15 @@ class MongoCursor {
    *   sort. Each element in the array has as key the field name, and as
    *   value either 1 for ascending sort, or -1 for descending sort.   Each
    *   result is first sorted on the first field in the array, then (if it
-   *   exists) on the second field in the array, etc. This means that the
-   *   order of the fields in the fields array is important. See also the
-   *   examples section.
+   *   exists) on the second field in the array, etc. 
    *
    * @return MongoCursor - Returns the same cursor that this method was
    *   called on.
    */
-  <<__Native>>
-  public function sort(array $fields): object;
+  public function sort(array $fields) {
+    $this->query['$orderby'] = $fields;
+    return $this;
+  }
 
   /**
    * Sets whether this cursor will be left open after fetching the last
@@ -342,8 +339,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function tailable(bool $tail = true): object;
+  public function tailable(bool $tail = true) {
+    $this->tailable = $tail;
+    return $this;
+  }
 
   /**
    * Sets a client-side timeout for this query
@@ -352,8 +351,10 @@ class MongoCursor {
    *
    * @return MongoCursor - This cursor.
    */
-  <<__Native>>
-  public function timeout(int $ms): object;
+  public function timeout(int $ms) {
+    $this->queryTimeout = $ms;
+    return $this;
+  }
 
   /**
    * Checks if the cursor is reading a valid result.
