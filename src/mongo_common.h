@@ -74,6 +74,13 @@ public:
 
   mongoc_cursor_t *get() { return m_cursor;}
 
+  void set(mongoc_cursor_t *cursor) {
+    if (cursor != m_cursor) {
+      mongoc_cursor_destroy(m_cursor);
+      m_cursor = cursor; 
+    }
+  } 
+
 private:
   mongoc_cursor_t *m_cursor;
 
