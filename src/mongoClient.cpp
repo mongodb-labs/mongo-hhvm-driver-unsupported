@@ -2,28 +2,6 @@
 
 namespace HPHP {
 
-const StaticString
-  s_mongoclient("MongoClient"),
-  s_mongoc_client("__mongoc_client");
-
-////////////////////////////////////////////////////////////////////////////////
-
-static Resource get_client_resource(Object obj) {
-  auto res = obj->o_realProp(s_mongoc_client, ObjectData::RealPropUnchecked, s_mongoclient);
-
-  if (!res || !res->isResource()) {
-    return null_resource;
-  }
-
-  return res->toResource();
-}
-
-static MongocClient *get_client(Object obj) {
-  auto res = get_client_resource(obj);
-
-  return res.getTyped<MongocClient>(true, false);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoClient
 

@@ -3,6 +3,9 @@
 
 namespace HPHP {
 
+////////////////////////////////////////////////////////////////////////////////
+// class MongoCursor
+
 static Object HHVM_METHOD(MongoCursor, addOption, const String& key, CVarRef value) {
   throw NotImplementedException("Not Implemented");
 }
@@ -13,6 +16,25 @@ static Object HHVM_METHOD(MongoCursor, awaitData, bool wait) {
 
 static Object HHVM_METHOD(MongoCursor, batchSize, int64_t batchSize) {
   throw NotImplementedException("Batch Size");
+}
+
+static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields) {
+  //Note: all other parameter values are taken from https://github.com/mongodb/mongo-c-driver/blob/3104b0b2c6fce06c1fe0d87e2b3b7bd107574fc2/tests/test-mongoc-cursor.c#L81
+  //Might be more preferable to use bson_append_value: https://github.com/mongodb/libbson/blob/d1559673630cd754f4da1f12d7e7f9796d7e5d95/tests/test-value.c#L73
+
+  //build bson object for query (currently allow only string-string key-value pairs)
+  bson_t query_bs;
+  bson_init(&query_bs);
+  bson_append_utf8(&query_bs, "test_field", 10, query[String("test_field")].toString().c_str(), 1);
+
+  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
+
+  this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
+  bson_destroy(&query_bs);
+
+  if (cursor == NULL) {
+    throw NotImplementedException("NULL pointer");
+  }
 }
 
 static int64_t HHVM_METHOD(MongoCursor, count, bool foundOnly) {
@@ -40,7 +62,23 @@ static Object HHVM_METHOD(MongoCursor, fields, CArrRef f) {
 }
 
 static Array HHVM_METHOD(MongoCursor, getNext) {
-  throw NotImplementedException("Not Implemented");
+  bson_error_t error;
+  mongoc_cursor_t *cursor = get_cursor(this_)->get();
+  const bson_t *doc;
+  char *str;
+
+  if (mongoc_cursor_next (cursor, &doc)) {
+    str = bson_as_json (doc, NULL);
+    printf ("%s\n", str); //Remove this once we have the BSON-PHP decoder done
+    bson_free (str);
+    return NULL;   //We should return the translated PHP Array here
+  } else {
+    if (mongoc_cursor_error (cursor, &error)) {
+      throw FatalErrorException(error.message);
+    } else {
+      return NULL;
+    } 
+  }
 }
 
 static Array HHVM_METHOD(MongoCursor, getReadPreference) {
@@ -48,7 +86,15 @@ static Array HHVM_METHOD(MongoCursor, getReadPreference) {
 }
 
 static bool HHVM_METHOD(MongoCursor, hasNext) {
-  throw NotImplementedException("Not Implemented");
+  bson_error_t error;
+  mongoc_cursor_t *cursor = get_cursor(this_)->get();
+
+  bool ret = mongoc_cursor_more(cursor);
+  if (!mongoc_cursor_error (cursor, &error)) {
+    return ret;
+  } else {
+    throw FatalErrorException(error.message);
+  }
 }
 
 static Object HHVM_METHOD(MongoCursor, hint, CVarRef index) {
@@ -72,7 +118,14 @@ static Object HHVM_METHOD(MongoCursor, limit, int64_t num) {
 }
 
 static void HHVM_METHOD(MongoCursor, next) {
-  throw NotImplementedException("Not Implemented");
+  bson_error_t error;
+  const bson_t *doc;
+  mongoc_cursor_t *cursor = get_cursor(this_)->get();
+  if (!mongoc_cursor_next (cursor, &doc)) {
+    if (mongoc_cursor_error (cursor, &error)) {
+      throw FatalErrorException(error.message);
+    }
+  }
 }
 
 static Object HHVM_METHOD(MongoCursor, partial, bool okay) {
@@ -84,7 +137,9 @@ static void HHVM_METHOD(MongoCursor, reset) {
 }
 
 static void HHVM_METHOD(MongoCursor, rewind) {
-  throw NotImplementedException("Not Implemented");
+  mongoc_cursor_t *cursor = get_cursor(this_)->get();
+  mongoc_cursor_t *rewinded_cursor = mongoc_cursor_clone(cursor);
+  get_cursor(this_)->set(rewinded_cursor);
 }
 
 static Object HHVM_METHOD(MongoCursor, setFlag, int64_t flag, bool set) {
