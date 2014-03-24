@@ -11,6 +11,8 @@ Installation requires a copy of HipHop to be **built from source** on the local 
 on how to do this are available on the [HipHop Wiki][fb-wiki]. Once done, the following commands
 will build the extension.
 
+This extension requires HHVM >= 2.4.2 to build.
+
 Firstly, ensure that the `$HPHP_HOME` env var has been set:
 
 ~~~

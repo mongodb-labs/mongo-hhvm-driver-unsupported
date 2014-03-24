@@ -2,6 +2,7 @@
 #define incl_HPHP_EXT_MONGO_COMMON_H_
 
 #include "hphp/runtime/base/base-includes.h"
+#include "hphp/runtime/base/persistent-resource-store.h"
 #include "mongoc.h"
 #include "string.h"
 
