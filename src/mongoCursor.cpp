@@ -184,7 +184,6 @@ void mongoExtension::_initMongoCursorClass() {
     HHVM_ME(MongoCursor, addOption);
     HHVM_ME(MongoCursor, awaitData);
     HHVM_ME(MongoCursor, batchSize);
-    HHVM_ME(MongoCursor, __construct);
     HHVM_ME(MongoCursor, count);
     HHVM_ME(MongoCursor, current);
     HHVM_ME(MongoCursor, dead);

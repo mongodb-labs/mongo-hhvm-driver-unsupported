@@ -34,10 +34,16 @@ This will produce a `mongo.so` file, the dynamically-loadable extension. For now
 To enable and test the extension, run ./test.sh.
 
 ## Tests
+Download and install [PHPUnit](http://phpunit.de/getting-started.html). Ensure that the phpunit binary is located at /usr/local/bin/phpunit. The following script will run the test suite.
+
+~~~
+$ ./test.sh
+~~~
+
 From the shell (assuming that you're in the mongo-hhvm-driver folder, and the config.hdf file is in there too), run the following to make sure that the dummy extension is set up properly.
 
 ~~~
-${HPHP_HOME}/hphp/hhvm/hhvm mongoTest.php --config config.hdf
+${HPHP_HOME}/hphp/hhvm/hhvm /usr/local/bin/phpunit test/mongoTest.php --config config.hdf
 ~~~
 
 ## Documentation

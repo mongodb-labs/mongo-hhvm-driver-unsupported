@@ -1,0 +1,3 @@
+{"name": "Alice", "subjects": ["Computer Science", "Statistics", "English", "Physics"], "GPA": 4.0, "_id": "1"}
+{"name": "Bob", "subjects": ["History", "Biology", "Mathematics"], "GPA": 3.6, "_id": "2"}
+{"name": "Charlie", "subjects": ["Anthropology", "Computer Science", "Physics", "East Asian Studies"], "GPA": 3.2, "_id": "3"}
