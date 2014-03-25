@@ -74,7 +74,7 @@ class MongoCursor {
   public function __construct(MongoClient $connection,
                               string $ns,
                               array $query = array(),
-                              array $fields = array());
+                              array $fields = array()): void;
 
   /**
    * Counts the number of results for this query
