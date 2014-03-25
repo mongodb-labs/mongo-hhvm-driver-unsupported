@@ -181,6 +181,7 @@ static bool HHVM_METHOD(MongoCursor, valid) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void mongoExtension::_initMongoCursorClass() {
+    HHVM_ME(MongoCursor, __construct);
     HHVM_ME(MongoCursor, addOption);
     HHVM_ME(MongoCursor, awaitData);
     HHVM_ME(MongoCursor, batchSize);
