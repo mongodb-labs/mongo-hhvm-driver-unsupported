@@ -50,9 +50,7 @@ cbson_loads_visit_utf8 (const bson_iter_t *iter,
                         const char        *v_utf8,
                         Array             *output)
 {
-   output->add(String(key),
-    String(bson_iter_utf8(iter, NULL))
-  ); 
+   output->add(String(key),v_utf8); 
    return false;
 }
 
