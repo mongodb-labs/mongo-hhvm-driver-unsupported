@@ -8,14 +8,18 @@ class MongoCursor {
 
   /* variables */
 
+  private $wait = true;
   private $batchSize = 100;
   private $fields = [];
   private $query = [];
-  private $queryLimit = 0;
-  private $querySkip = 0;
+  private $limit = 0;
+  private $skip = 0;
   private $queryTimeout = null;
   private $started_iterating = false;
   private $tailable = false;
+  private $ns = null;
+  private $partialResultsOK = false;
+  private $slaveOkay = false;
 
   /**
    * Adds a top-level key/value pair to a query
@@ -25,9 +29,14 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
   public function addOption(string $key,
-                            mixed $value): object;
+                            mixed $value): MongoCursor {
+    if ($started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
+    $this->query[$key] = $value;
+    return $this;
+  }
 
   /**
    * Sets whether this cursor will wait for a while for a tailable cursor to
@@ -38,8 +47,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function awaitData(bool $wait = true): object;
+  public function awaitData(bool $wait = true): MongoCursor {
+    $this->$wait = $wait;
+    return $this;
+  }
 
   /**
    * Limits the number of elements returned in one batch.
@@ -54,7 +65,7 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  public function batchSize(int $batchSize) {
+  public function batchSize(int $batchSize): MongoCursor {
     //TODO: Handle non-positive batch size
     $this->batchSize = $batchSize;
     return $this;
@@ -144,7 +155,7 @@ class MongoCursor {
     $current_record = $this->current();
     $this->next();
 
-    return $record;
+    return $current_record;
   }
 
   /**
@@ -194,17 +205,25 @@ class MongoCursor {
    * @return array - Returns the namespace, limit, skip, query, and
    *   fields for this cursor.
    */
-  <<__Native>>
-  public function info(): array;
+  public function info(): array {
+    $info = [];
+    $info["ns"] = $this->ns;
+    $info["limit"] = $this->limit;
+    $info["skip"] = $this->skip;
+    $info["query"] = $this->query;
+    $info["fields"] = $this->fields;
+    return $info;
+  }
 
   /**
    * Returns the current results _id
    *
    * @return string - The current results _id as a string.
    */
-  <<__Native>>
-  public function key(): string;
-
+  public function key(): string {
+    $current_record = $this->current();
+    return $current_record["_id"];
+  }
   /**
    * Limits the number of results returned
    *
@@ -213,7 +232,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function limit(int $num) {
-    $this->queryLimit = $num;
+    $this->limit = $num;
     return $this;
   }
 
@@ -232,8 +251,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function partial(bool $okay = true): object;
+  public function partial(bool $okay = true): MongoCursor {
+    $this->partialResultsOK = $okay;
+    return $this;
+  }
 
   /**
    * Clears the cursor
@@ -288,7 +309,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function skip(int $num) {
-    $this->querySkip = $num;
+    $this->skip = $num;
     return $this;
   }
 
@@ -299,8 +320,10 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function slaveOkay(bool $okay = true): object;
+  public function slaveOkay(bool $okay = true): MongoCursor {
+    $this->slaveOkay = $okay;
+    return $this;
+  }
 
   /**
    * Use snapshot mode for the query

@@ -1,6 +1,6 @@
 <?php
 
-class MongoDBTest extends PHPUnit_Framework_TestCase{
+class MongoDBTest extends MongoTestCase {
 
 	public function testMongoDB() {
 		printf("Running testMongoDB\n");

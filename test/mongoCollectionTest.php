@@ -1,6 +1,6 @@
 <?php
 
-class MongoCollectionTest extends PHPUnit_Framework_TestCase{
+class MongoCollectionTest extends MongoTestCase {
 
 	public function testMongoCollection() {
 		printf("Running testMongoCollection\n");
