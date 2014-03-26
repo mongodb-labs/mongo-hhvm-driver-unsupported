@@ -78,7 +78,7 @@ cbson_loads (bson_t * bson)
 
   reader = bson_reader_new_from_data((uint8_t *)bson.c_str(), bson.size());
 
-  if (!(b = bson_reader_read(reader, &eof))
+  if (!(b = bson_reader_read(reader, &eof)))
   {
     std::cout << "Buffer contained invalid BSON." << endl;
     return NULL;
