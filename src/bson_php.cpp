@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "hphp/runtime/base/base-includes.h"
 
+namespace HPHP {
+
 static bool
 cbson_loads_visit_int64 (const bson_iter_t *iter,
                          const char*        key,
@@ -99,4 +101,5 @@ cbson_loads (bson_t * bson)
   }
 
   return ret;
+}
 }
