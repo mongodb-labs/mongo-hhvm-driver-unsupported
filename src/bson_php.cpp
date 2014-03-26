@@ -29,6 +29,7 @@ cbson_loads_visit_array (const bson_iter_t *iter,
                         const bson_t     v_array,
                         Array           *output)
 {
+   
    return false;
 }
 static const bson_visitor_t gLoadsVisitors = {
