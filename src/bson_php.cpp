@@ -1,4 +1,5 @@
 #include <bson.h>
+#include <stdio.h>
 #include "hphp/runtime/base/base-includes.h"
 
 static bool
@@ -64,3 +65,38 @@ static const bson_visitor_t gLoadsVisitors = {
    .visit_int64 = cbson_loads_visit_int64;
 };
 
+static Array * 
+cbson_loads (bson_t * bson) 
+{
+  bson_reader_t * reader;
+  const bson_t * b;
+  bson_iter_t iter;
+  bool eof;
+
+  Array ret = Array();
+
+  reader = bson_reader_new_from_data((uint8_t *)bson.c_str(), bson.size());
+
+  if (!(b = bson_reader_read(reader, &eof))
+  {
+    std::cout << "Buffer contained invalid BSON." << endl;
+  }
+
+  do {
+    if (!bson_iter_init(&iter, b))
+    {
+      bson_reader_destroy(reader);
+      std::cout << "Failed to initiate iterator." << endl;
+    }
+    bson_iter_visit_all(&iter, &gLoadsVisitors, &ret); 
+  } while ((b = bson_reader_read(reader, &eof)));
+
+  bson_reader_destroy(reader);
+
+  if (!eof) {
+    std::cout << "Buffer contained invalid BSON." << endl;
+    return;
+  }
+
+  return ret;
+}
