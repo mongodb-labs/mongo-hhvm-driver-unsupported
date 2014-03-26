@@ -5,13 +5,22 @@
 namespace HPHP {
 
 static bool
+cbson_loads_visit_int32 (const bson_iter_t *iter,
+                         const char          key,
+                         int32_t           v_int32,
+                         Array             *output)
+{
+  output->add(String(key), v_int32);
+  return false;
+}
+
+static bool
 cbson_loads_visit_int64 (const bson_iter_t *iter,
                          const char*        key,
                          int64_t          v_int64,
                          Array             *output)
 {
-  output->add(String(key),v_int64);
-  
+  output->add(String(key),v_int64);  
   return false;
 }
 
@@ -57,13 +66,37 @@ cbson_loads_visit_utf8 (const bson_iter_t *iter,
    return false;
 }
 
+static bool
+cbson_loads_visit_null (const bson_iter_t *iter,
+                        const char        *key,                          
+                        Array             *output)
+{
+  output->add(String(key), Variant());
+} 
 
-static const bson_visitor_t gLoadsVisitors = {
+// TODO: Finish Implementation for ObjectID
+static bool
+cbson_loads_visit_oid (const bson_iter_t *iter,
+                       const char        *key,
+                       const bson_oid_t  *oid,
+                       Array             *output)
+{
+  char id[25];
+  bson_oid_to_string(oid, id);
+
+
+}
+
+static const bson_visitor_t gLoadsVisitors = 
+{
    .visit_double = cbson_loads_visit_double,
+   .visit_int32 = cbson_loads_visit_int32,
    .visit_utf8 = cbson_loads_visit_utf8,
    .visit_array = cbson_loads_visit_array,
    .visit_bool = cbson_loads_visit_bool,
-   .visit_int64 = cbson_loads_visit_int64;
+   .visit_int64 = cbson_loads_visit_int64,
+   .visit_null = cbson_loads_visit_null;
+   //.visit_oid = cbson_loads_visit_oid;
 };
 
 static Array * 
@@ -103,4 +136,5 @@ cbson_loads (bson_t * bson)
 
   return ret;
 }
+// Namespace
 }
