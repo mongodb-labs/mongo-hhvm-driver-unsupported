@@ -78,6 +78,7 @@ cbson_loads (bson_t * bson)
   if (!(b = bson_reader_read(reader, &eof))
   {
     std::cout << "Buffer contained invalid BSON." << endl;
+    return NULL;
   }
 
   do {
@@ -85,6 +86,7 @@ cbson_loads (bson_t * bson)
     {
       bson_reader_destroy(reader);
       std::cout << "Failed to initiate iterator." << endl;
+      return NULL;
     }
     bson_iter_visit_all(&iter, &gLoadsVisitors, &ret); 
   } while ((b = bson_reader_read(reader, &eof)));
@@ -93,7 +95,7 @@ cbson_loads (bson_t * bson)
 
   if (!eof) {
     std::cout << "Buffer contained invalid BSON." << endl;
-    return;
+    return NULL;
   }
 
   return ret;
