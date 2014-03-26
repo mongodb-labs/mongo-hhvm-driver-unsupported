@@ -5,9 +5,9 @@ static bool
 cbson_loads_visit_int64 (const bson_iter_t *iter,
                          const char*        key,
                          int64_t          v_int64,
-                         void             *output)
+                         Array             *output)
 {
-  ((Array *)output)->add(String(key),v_int64);
+  output->add(String(key),v_int64);
   
   return false;
 }
@@ -16,9 +16,9 @@ static bool
 cbson_loads_visit_bool (const bson_iter_t *iter,
                         const char        *key,
                         bool        v_bool,
-                        void       *output)
+                        Array       *output)
 {
-   ((Array *)output)->add(String(key), v_bool);
+   output->add(String(key), v_bool);
    return false;
 }
 
@@ -27,7 +27,7 @@ static bool
 cbson_loads_visit_array (const bson_iter_t *iter,
                         const char        *key,
                         const bson_t     v_array,
-                        void           *output)
+                        Array           *output)
 {
    return false;
 }
