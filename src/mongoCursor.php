@@ -9,7 +9,6 @@ class MongoCursor {
   /* variables */
   private $batchSize = 100;
   private $connection = null;
-  private $count = 0;
   private $dead = false;
   private $wait = true;
   private $fields = [];
@@ -36,7 +35,8 @@ class MongoCursor {
   public function current(): array;
 
   /**
-   * Checks if there are any more elements in this cursor
+   * Checks if there are any more elements in this cursor.
+   * May be hard to do in both php and c++
    *
    * @return bool - Returns if there is another element.
    */
@@ -159,11 +159,27 @@ class MongoCursor {
    *   query.
    */
   public function count(bool $foundOnly = false): int {
-    if (!$foundOnly) {
-      return $this->count;
-    }
+    $pieces = explode($this->ns);
+    $db_name = $pieces[0];
+    $collection_name = $pieces[1];
 
-    return max(0, $this->count - $this->skip, $this->limit);
+    $db = ($this->connection)->selectDB($db_name);
+    $query = ["count" => $collection_name];
+    $options = [];
+    if ($foundOnly) {
+      if ($this->limit > 0) {
+        $options["limit"] = $this->limit;
+      }
+      if ($this->skip > 0) {
+        $options["skip"] = $this->skip;
+      }
+    } 
+
+    $command_result = $db->command($query, $options);
+    if (!$command_result["ok"]) {
+      throw new MongoCursorException();
+    }
+    return $command_result["n"];
   }
 
   /**
@@ -214,7 +230,6 @@ class MongoCursor {
     if ($this->valid()) {
       $current_record = $this->current();
       $this->next();
-
       return $current_record;
     } else {
       throw new MongoCursorException();
@@ -283,7 +298,9 @@ class MongoCursor {
     $info = [
       "ns" => $this->ns,
       "limit" => $this->limit,
+      "batchSize" => $this->batchSize,
       "skip" => $this->skip,
+      "flags" => $this->flags,
       "query" => $this->query,
       "fields" => $this->fields
     ];
