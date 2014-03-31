@@ -6,7 +6,7 @@ namespace HPHP {
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoCursor
 
-static Object HHVM_METHOD(MongoCursor, addOption, const String& key, CVarRef value) {
+static Object HHVM_METHOD(MongoCursor, addOption, const String& key, Variant value) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -57,7 +57,7 @@ static Array HHVM_METHOD(MongoCursor, explain) {
   throw NotImplementedException("Not Implemented");
 }
 
-static Object HHVM_METHOD(MongoCursor, fields, CArrRef f) {
+static Object HHVM_METHOD(MongoCursor, fields, Array f) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -97,7 +97,7 @@ static bool HHVM_METHOD(MongoCursor, hasNext) {
   }
 }
 
-static Object HHVM_METHOD(MongoCursor, hint, CVarRef index) {
+static Object HHVM_METHOD(MongoCursor, hint, Variant index) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -146,7 +146,7 @@ static Object HHVM_METHOD(MongoCursor, setFlag, int64_t flag, bool set) {
   throw NotImplementedException("Not Implemented");
 }
 
-static Object HHVM_METHOD(MongoCursor, setReadPreference, const String& read_preference, CArrRef tags) {
+static Object HHVM_METHOD(MongoCursor, setReadPreference, const String& read_preference, Array tags) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -162,7 +162,7 @@ static Object HHVM_METHOD(MongoCursor, snapshot) {
   throw NotImplementedException("Not Implemented");
 }
 
-static Object HHVM_METHOD(MongoCursor, sort, CArrRef fields) {
+static Object HHVM_METHOD(MongoCursor, sort, Array fields) {
   throw NotImplementedException("Not Implemented");
 }
 
