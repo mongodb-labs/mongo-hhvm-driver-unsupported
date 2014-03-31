@@ -7,6 +7,8 @@ Assuming that in test.test_collection we have the following three documents:
 { "_id" : ..., "test_field" : "1", "num" : "3" }
 */
 
+$output = shell_exec('mongoimport --db test --collection test_collection --file test/test_collection.json --upsert');
+echo $output;
 $mc = new MongoClient();
 printf("Server version: %s\n", $mc->getServerVersion());
 
@@ -18,6 +20,8 @@ while ($mcursor->hasNext()) {
 	printf("hasNext?: Yes\n");
 	$mcursor->getNext();
 }
+
+printf("Ran through cursor");
 
 $mcursor->rewind();
 $mcursor->next();
