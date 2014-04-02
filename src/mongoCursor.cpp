@@ -59,6 +59,8 @@ static void HHVM_METHOD(MongoCursor, rewind) {
   auto ns = this_->o_realProp("ns", ObjectData::RealPropUnchecked, "MongoCursor")->toString();
   auto query = this_->o_realProp("query", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
 
+  Variant o_set(const String& s, const Variant& v, const String& context);
+
   bson_t query_bs;
   bson_init(&query_bs);
   if (!query->empty()) {
@@ -85,6 +87,8 @@ MongocCursor(mongoc_client_t           *client,
 
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
+
+  this_->o_set("started_iterating", Variant(true), "MongoCursor");
 
   HHVM_MN(MongoCursor, next)(this_);
 }

@@ -15,6 +15,13 @@ class MongoCursorTest extends MongoTestCase {
 		//var_dump($cursor->batchSize(5));
 		
 		$cursor->rewind();
+
+		//Expect to have an exception since the cursor has started iterating.
+		try {
+		    $cursor->addOption("", "");
+		} catch (Exception $e) {
+		    echo 'Caught exception: ',  $e->getMessage(), "\n";
+		}
 		
 		while ($cursor->valid())
 		{
