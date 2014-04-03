@@ -32,11 +32,11 @@ void MongocClient::SetPersistent(const String& uri, MongocClient *client) {
 }
 
 MongocClient *MongocClient::GetCachedImpl(const char *name, const String& uri) {
-  return dynamic_cast<MongocClient*>(g_persistentObjects->get(name, uri.data()));
+  return dynamic_cast<MongocClient*>(g_persistentResources->get(name, uri.data()));
 }
 
 void MongocClient::SetCachedImpl(const char *name, const String& uri, MongocClient *client) {
-  g_persistentObjects->set(name, uri.data(), client);
+  g_persistentResources->set(name, uri.data(), client);
 }
 
 MongocClient::MongocClient(const String &uri) {

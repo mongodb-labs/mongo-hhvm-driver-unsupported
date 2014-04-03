@@ -5,20 +5,19 @@ This is an implementation of the `MongoDB` PHP extension for the [HipHop PHP VM]
 
 ## Prerequisites
 
-## Building and installation
+Installation requires a copy of HHVM to be **built from source** on the local machine, instructions
+on how to do this are available on the [HipHop Wiki][fb-wiki]. Note that this extension requires HHVM >= 3.0.0 to build.
 
-Installation requires a copy of HipHop to be **built from source** on the local machine, instructions
-on how to do this are available on the [HipHop Wiki][fb-wiki]. Once done, the following commands
-will build the extension.
+Secondly, ensure that libmongoc is installed. Instructions for installing
+libmongoc may be found [here](https://github.com/mongodb/mongo-c-driver#fetch-sources-and-build).
+
+## Building and installation
 
 Firstly, ensure that the `$HPHP_HOME` env var has been set:
 
 ~~~
 export HPHP_HOME=/path/to/hhvm
 ~~~~
-
-Secondly, ensure that libmongoc is installed. Instructions for installing
-libmongoc may be found [here](https://github.com/mongodb/mongo-c-driver#fetch-sources-and-build).
 
 Then the build proper:
 
@@ -31,9 +30,8 @@ $ ./build.sh
 
 This will produce a `mongo.so` file, the dynamically-loadable extension. For now, please use the build script to make the files from inside the extension folder.
 
-To enable and test the extension, run ./test.sh.
-
 ## Tests
+
 Download and install [PHPUnit](http://phpunit.de/getting-started.html). Ensure that the phpunit binary is located at /usr/local/bin/phpunit. The following script will run the test suite.
 
 ~~~
