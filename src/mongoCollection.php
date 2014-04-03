@@ -9,13 +9,16 @@ class MongoCollection {
   /* Constants */
   const ASCENDING = 1 ;
   const DESCENDING = -1 ;
+  
   /* Fields */
-
   private $db = NULL;
   private $w;
   private $wtimeout;
 
+  /* Variables */
   private $name;
+  private $slaveOkay = false;
+  private $read_preference = [];
 
   /**
    * Perform an aggregation using the aggregation framework
@@ -206,7 +209,6 @@ class MongoCollection {
   public function findOne(array $query = array(),
                           array $fields = array()): array {
     return [];
-    
   }
 
   /** TODO
@@ -248,24 +250,27 @@ class MongoCollection {
    *
    * @return string - Returns the name of this collection.
    */
-  <<__Native>>
-  public function getName(): string;
+  public function getName(): string{
+    return $this->name;
+  }
 
   /**
    * Get the read preference for this collection
    *
    * @return array -
    */
-  <<__Native>>
-  public function getReadPreference(): array;
+  public function getReadPreference(): array {
+    return $this->read_preference;
+  }
 
   /**
    * Get slaveOkay setting for this collection
    *
    * @return bool - Returns the value of slaveOkay for this instance.
    */
-  <<__Native>>
-  public function getSlaveOkay(): bool;
+  public function getSlaveOkay(): bool {
+    return $this->slaveOkay;
+  }
 
   /** TODO
    * Performs an operation similar to SQL's GROUP BY command
@@ -346,9 +351,12 @@ class MongoCollection {
    *
    * @return bool -
    */
-  <<__Native>>
   public function setReadPreference(string $read_preference,
-                                    array $tags): bool;
+                                    array $tags): bool {
+    $this->read_preference['type'] = $read_preference;
+    $this->read_preference['tagsets'] = $tags;
+    return true;
+  }
 
   /**
    * Change slaveOkay setting for this collection
@@ -360,8 +368,11 @@ class MongoCollection {
    * @return bool - Returns the former value of slaveOkay for this
    *   instance.
    */
-  <<__Native>>
-  public function setSlaveOkay(bool $ok = true): bool;
+  public function setSlaveOkay(bool $ok = true): bool {
+    $former = $this->slaveOkay;
+    $this->slaveOkay = $ok;
+    return $former;
+  }
 
   /**
    * Converts keys specifying an index to its identifying string
