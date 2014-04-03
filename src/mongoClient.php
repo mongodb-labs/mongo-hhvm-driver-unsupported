@@ -40,8 +40,16 @@ class MongoClient {
    *
    * @return array - Returns the database response.
    */
-  <<__Native>>
-  public function dropDB(mixed $db): array;
+  public function dropDB(mixed $db): array {
+    if(is_object($db)) {
+      return $db->drop();
+    } 
+
+    if(is_string($db)) {
+      return $this->selectDB($db)->drop();
+    }
+    throw new MongoConnectionException();
+  }
 
   /**
    * Gets a database
@@ -50,8 +58,9 @@ class MongoClient {
    *
    * @return MongoDB - Returns a new db object.
    */
-  <<__Native>>
-  public function __get(string $dbname): object;
+  public function __get(string $dbname): MongoDB {
+    return $this->selectDB($dbname);
+  }
 
   /**
    * Return info about all open connections
@@ -114,9 +123,10 @@ class MongoClient {
    *
    * @return MongoCollection - Returns a new collection object.
    */
-  <<__Native>>
   public function selectCollection(string $db,
-                                   string $collection): object;
+                                   string $collection) {
+    return $this->selectDB($db)->selectCollection($collection);
+  }
 
   /**
    * Gets a database

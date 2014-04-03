@@ -6,7 +6,7 @@
 class MongoDB {
     
     /* variables */
-    private $conn = null;
+    private $client = null;
     private $db_name = "";
     private $slaveOkay = false;
 
@@ -35,9 +35,10 @@ class MongoDB {
      *   is always maximum one document, which means that the result of a
      *   database command can never exceed 16MB.
      */
-    <<__Native>>
     public function command(array $command,
-                            array $options = array()): array;
+                            array $options = array()): array {
+        return $this->client->__get("$cmd")->findOne($command);
+    }
 
     /**
      * Creates a new database
@@ -47,18 +48,14 @@ class MongoDB {
      *
      * @return  - Returns the database.
      */
-    // <<__Native>>
-    // public function __construct(MongoClient $conn,
-    //                             string $name): void;
 
     //TODO: Make native
     public function __construct(MongoClient $conn, string $name) {
-            $this->conn = $conn;
+            $this->client = $conn;
             $this->db_name = $name;
     }
 
     /**
-     * TODO: Make function native
      * Creates a collection
      *
      * @param string $name - name    The name of the collection.
@@ -151,6 +148,10 @@ class MongoDB {
      */
     <<__Native>>
     public function __get(string $name): MongoCollection;
+
+    public function __getClient(): MongoClient {
+        return $this->client;
+    }
 
     /** TODO
      * Get all collections from this database
@@ -263,15 +264,16 @@ class MongoDB {
         return $this->command(array('reseterror' => 1));
     }
 
-    /** TODO
+    /**
      * Gets a collection
      *
      * @param string $name - name    The collection name.
      *
      * @return MongoCollection - Returns a new collection object.
      */
-    <<__Native>>
-    public function selectCollection(string $name): MongoCollection;
+    public function selectCollection(string $name): MongoCollection {
+        return $this->client->selectCollection($this->db_name, $name);
+    }
 
     /**
      * Sets this databases profiling level

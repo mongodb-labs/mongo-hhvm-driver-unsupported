@@ -165,17 +165,16 @@ class MongoCursor {
 
     $db = ($this->connection)->selectDB($db_name);
     $query = ["count" => $collection_name];
-    $options = [];
     if ($foundOnly) {
       if ($this->limit > 0) {
-        $options["limit"] = $this->limit;
+        $query["limit"] = $this->limit;
       }
       if ($this->skip > 0) {
-        $options["skip"] = $this->skip;
+        $query["skip"] = $this->skip;
       }
     } 
 
-    $command_result = $db->command($query, $options);
+    $command_result = $db->command($query);
     if (!$command_result["ok"]) {
       throw new MongoCursorException();
     }
@@ -202,7 +201,7 @@ class MongoCursor {
   public function explain(): array {
     $this->query['$explain'] = true;
     $this->rewind();
-    return $this->current;
+    return $this->current();
   }
 
   /**

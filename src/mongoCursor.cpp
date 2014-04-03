@@ -11,7 +11,7 @@ static Array HHVM_METHOD(MongoCursor, current) {
   const bson_t *doc;
   char *str;
 
-  doc = mongoc_cursor_current (cursor);
+  doc = mongoc_cursor_current(cursor);
   if (doc) {
     str = bson_as_json (doc, NULL);
     auto ret = Array::Create("return", str); //TODO: We should return the translated PHP Array here  
