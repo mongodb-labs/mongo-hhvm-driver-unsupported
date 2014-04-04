@@ -67,7 +67,7 @@ class MongoCollection {
    *   fields to match.
    * @param int $limit - limit    Specifies an upper limit to the number
    *   returned.
-   * @param int $skip - skip    Specifies a number of results to skip
+   * @param int $skip - skip    Specifies a number of results to skip 
    *   before starting the count.
    *
    * @return int - Returns the number of documents matching the query.

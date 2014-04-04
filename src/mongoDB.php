@@ -7,8 +7,10 @@ class MongoDB {
     
     /* variables */
     private $client = null;
+    private $collections = [];
     private $db_name = "";
     private $slaveOkay = false;
+    private $read_preference = [];
 
     /**
      * Log in to this database
@@ -21,9 +23,22 @@ class MongoDB {
      *   return    ("auth fails" could be another message, depending on
      *   database version and what when wrong).
      */
-    <<__Native>>
     public function authenticate(string $username,
-                                string $password): array;
+                                string $password): array {
+        $salted = "${username}:mongo:${password}";
+        $hash = md5($salted);
+
+        $nonce = $this->command(array("getnonce" => 1));
+
+        $saltedHash = md5($nonce["nonce"]."${username}${hash}");
+        
+        $result = $this->command(array("authenticate" => 1,
+                                       "user" => $username,
+                                       "nonce" => $nonce["nonce"],
+                                       "key" => $saltedHash));
+
+        return $result;
+    }
 
     /**
      * Execute a database command
@@ -37,7 +52,7 @@ class MongoDB {
      */
     public function command(array $command,
                             array $options = array()): array {
-        return $this->client->__get("$cmd")->findOne($command);
+        return $this->selectCollection("$cmd")->findOne($command);
     }
 
     /**
@@ -69,14 +84,17 @@ class MongoDB {
      */
     public function createCollection(string $name,
                                       array $options): MongoCollection {
-        $collection = $db->command(array(
+        $result = $this->command(array(
             "create" => $name,
             "capped" => $options["capped"],
             "size" => $options["size"],
             "max" => $options["max"],
             "autoIndexId" => $options["autoIndexId"],
         ));
-        return $collection;   
+        if (!$result["ok"]) {
+            throw new MongoException("Unable to create collection");
+        }
+        return new MongoCollection($this, $name);   
     }
 
 
@@ -93,9 +111,15 @@ class MongoDB {
      *   without an _id field was provided as the document_or_id parameter,
      *   NULL will be returned.
      */
-    <<__Native>>
     public function createDBRef(string $collection, 
-                                mixed $document_or_id): array;
+                                mixed $document_or_id): array {
+        if (is_array($document_or_id)) {
+            $id = $document_or_id['_id'];
+        } else {
+            $id = $document_or_id;
+        }
+        return MongoDBRef::create($collection, $id, $this->db_name);
+    }
 
     /**
      * Drops this database
@@ -107,15 +131,19 @@ class MongoDB {
     }
 
     /**
-     * Drops a collection [deprecated]
+     * Drops a collection [deprecated].
      *
      * @param mixed $coll - coll    MongoCollection or name of collection
      *   to drop.
      *
      * @return array - Returns the database response.
      */
-    <<__Native>>
-    public function dropCollection(mixed $coll): array;
+    public function dropCollection(mixed $coll): array {
+        if (is_object($coll)) {
+            $coll = (string)$coll;
+        }
+        return $this->command(array('drop' => $coll));
+    }
 
     /**
      * Runs JavaScript code on the database server.
@@ -139,15 +167,16 @@ class MongoDB {
         return $this->command(array('forceerror' => 1));
     }
 
-    /** TODO
+    /**
      * Gets a collection
      *
      * @param string $name - name    The name of the collection.
      *
      * @return MongoCollection - Returns the collection.
      */
-    <<__Native>>
-    public function __get(string $name): MongoCollection;
+    public function __get(string $name): MongoCollection {
+        return $this->selectCollection($name);
+    }
 
     public function __getClient(): MongoClient {
         return $this->client;
@@ -164,15 +193,16 @@ class MongoDB {
     <<__Native>>
     public function getCollectionNames(bool $includeSystemCollections = false): array;
 
-    /** TODO
+    /**
      * Fetches the document pointed to by a database reference
      *
      * @param array $ref - ref    A database reference.
      *
      * @return array - Returns the document pointed to by the reference.
      */
-    <<__Native>>
-    public function getDBRef(array $ref): array;
+    public function getDBRef(array $ref): array {
+        return MongoDBRef::get($this, $ref);
+    }
 
     /**
      * TODO: Make MongoGridFS class
@@ -195,13 +225,14 @@ class MongoDB {
         return $this->command(array('profile' => -1));
     }
 
-    /** TODO
+    /**
      * Get the read preference for this database
      *
      * @return array -
      */
-    <<__Native>>
-    public function getReadPreference(): array;
+    public function getReadPreference(): array {
+        return $this->read_preference;
+    }
 
     /**
      * Get slaveOkay setting for this database
@@ -218,7 +249,7 @@ class MongoDB {
      * @return array - Returns the error, if there was one.
      */
     public function lastError(): array {
-        return $this->command(array('getlasterror' => 1));
+        return $this->command(array('getLastError' => 1));
     }
 
     /** TODO
@@ -231,14 +262,15 @@ class MongoDB {
     <<__Native>>
     public function listCollections(bool $includeSystemCollections = false): array;
 
-    /**
+    /** TODO: Will be deprecated soon
      * Checks for the last error thrown during a database operation
      *
      * @return array - Returns the error and the number of operations ago
      *   it occurred.
      */
-    <<__Native>>
-    public function prevError(): array;
+    public function prevError(): array {
+        return $this->command(array('getPrevError' => 1));
+    }
 
     /**
      * Repairs and compacts this database
@@ -264,7 +296,7 @@ class MongoDB {
         return $this->command(array('reseterror' => 1));
     }
 
-    /**
+    /** TODO: 
      * Gets a collection
      *
      * @param string $name - name    The collection name.
@@ -272,7 +304,10 @@ class MongoDB {
      * @return MongoCollection - Returns a new collection object.
      */
     public function selectCollection(string $name): MongoCollection {
-        return $this->client->selectCollection($this->db_name, $name);
+        if (!isset($this->collections[$name])) {
+            $this->collections[$name] = new MongoCollection($this, $name);
+        }
+        return $this->collections[$name];
     }
 
     /**
@@ -286,7 +321,7 @@ class MongoDB {
         return $this->command(array('profile' => $level));
     }
 
-    /** TODO
+    /** TODO: When to return false?
      * Set the read preference for this database
      *
      * @param string $read_preference -
@@ -294,9 +329,12 @@ class MongoDB {
      *
      * @return bool -
      */
-    <<__Native>>
     public function setReadPreference(string $read_preference,
-                                        array $tags): bool;
+                                        array $tags): bool {
+        $this->read_preference['type'] = $read_preference;
+        $this->read_preference['tagsets'] = $tags;
+        return true;
+    }
 
     /**
      * Change slaveOkay setting for this database

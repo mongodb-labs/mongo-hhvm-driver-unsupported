@@ -7,6 +7,8 @@
 */
 class MongoResultException extends MongoException
 {
+	public $document;
+	
 	/**
 	* Retrieve the full result document
 	*

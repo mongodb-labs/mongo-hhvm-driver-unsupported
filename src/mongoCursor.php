@@ -148,6 +148,7 @@ class MongoCursor {
     $this->ns = $ns;
     $this->query = $query;
     $this->fields = $fields;
+
   }
 
   /**
@@ -163,7 +164,7 @@ class MongoCursor {
     $db_name = $pieces[0];
     $collection_name = $pieces[1];
 
-    $db = ($this->connection)->selectDB($db_name);
+    $db = $this->connection->selectDB($db_name);
     $query = ["count" => $collection_name];
     if ($foundOnly) {
       if ($this->limit > 0) {
@@ -400,7 +401,7 @@ class MongoCursor {
     return $this;
   }
 
-  /**
+  /** DEPRECATED
    * Sets whether this query can be done on a secondary
    *
    * @param bool $okay - okay    If it is okay to query the secondary.
@@ -448,7 +449,7 @@ class MongoCursor {
     return $this;
   }
 
-  /**
+  /** TODO: Make sure C++ code closes cursor appropriately
    * Sets whether this cursor will be left open after fetching the last
    * results
    *
@@ -464,7 +465,7 @@ class MongoCursor {
     return $this;
   }
 
-  /**
+  /** TODO: How does query-side timeout work?
    * Sets a client-side timeout for this query
    *
    * @param int $ms -
