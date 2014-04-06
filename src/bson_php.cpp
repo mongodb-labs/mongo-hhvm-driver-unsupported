@@ -134,7 +134,7 @@ cbson_loads_visit_array (const bson_iter_t *iter,
   bson_return_val_if_fail(key, true);
   bson_return_val_if_fail(v_array, true);
 
-  if (bson_iter_init(&child, v_document))
+  if (bson_iter_init(&child, v_array))
   {
     obj = Array();
     if (!bson_iter_visit_all(&child, &gLoadsVisitors, &obj))
