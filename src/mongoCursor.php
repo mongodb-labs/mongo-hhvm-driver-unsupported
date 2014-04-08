@@ -89,7 +89,7 @@ class MongoCursor {
    */
   public function addOption(string $key,
                             mixed $value): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->query[$key] = $value;
@@ -148,6 +148,7 @@ class MongoCursor {
     $this->ns = $ns;
     $this->query = $query;
     $this->fields = $fields;
+
   }
 
   /**
@@ -163,19 +164,18 @@ class MongoCursor {
     $db_name = $pieces[0];
     $collection_name = $pieces[1];
 
-    $db = ($this->connection)->selectDB($db_name);
+    $db = $this->connection->selectDB($db_name);
     $query = ["count" => $collection_name];
-    $options = [];
     if ($foundOnly) {
       if ($this->limit > 0) {
-        $options["limit"] = $this->limit;
+        $query["limit"] = $this->limit;
       }
       if ($this->skip > 0) {
-        $options["skip"] = $this->skip;
+        $query["skip"] = $this->skip;
       }
     } 
 
-    $command_result = $db->command($query, $options);
+    $command_result = $db->command($query);
     if (!$command_result["ok"]) {
       throw new MongoCursorException();
     }
@@ -202,7 +202,7 @@ class MongoCursor {
   public function explain(): array {
     $this->query['$explain'] = true;
     $this->rewind();
-    return $this->current;
+    return $this->current();
   }
 
   /**
@@ -213,7 +213,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function fields(array $fields) {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to change fields after started iterating");
     }
     $this->fields = $fields;
@@ -280,7 +280,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function immortal(bool $liveForever = true): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
 
@@ -324,7 +324,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function limit(int $num) {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->limit = $num;
@@ -339,7 +339,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function partial(bool $okay = true): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->partialResultsOK = $okay;
@@ -361,7 +361,7 @@ class MongoCursor {
    */
   public function setFlag(int $flag,
                           bool $set = true): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->flags[$flag] = $set;
@@ -378,7 +378,7 @@ class MongoCursor {
    */
   public function setReadPreference(string $read_preference,
                                     array $tags): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->read_preference['type'] = $read_preference;
@@ -394,14 +394,14 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function skip(int $num): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->skip = $num;
     return $this;
   }
 
-  /**
+  /** DEPRECATED
    * Sets whether this query can be done on a secondary
    *
    * @param bool $okay - okay    If it is okay to query the secondary.
@@ -409,7 +409,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function slaveOkay(bool $okay = true): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->slaveOkay = $okay;
@@ -422,7 +422,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function snapshot() {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->query['$snapshot'] = true;
@@ -442,14 +442,14 @@ class MongoCursor {
    *   called on.
    */
   public function sort(array $fields) {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->query['$orderby'] = $fields;
     return $this;
   }
 
-  /**
+  /** TODO: Make sure C++ code closes cursor appropriately
    * Sets whether this cursor will be left open after fetching the last
    * results
    *
@@ -458,14 +458,14 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function tailable(bool $tail = true): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->tailable = $tail;
     return $this;
   }
 
-  /**
+  /** TODO: How does query-side timeout work?
    * Sets a client-side timeout for this query
    *
    * @param int $ms -
@@ -473,7 +473,7 @@ class MongoCursor {
    * @return MongoCursor - This cursor.
    */
   public function timeout(int $ms): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->timeout = $ms;

@@ -5,10 +5,10 @@ This is an implementation of the `MongoDB` PHP extension for the [HipHop PHP VM]
 
 ## Prerequisites
 
-Installation requires a copy of HHVM to be **built from source** on the local machine, instructions
-on how to do this are available on the [HipHop Wiki][fb-wiki]. Note that this extension requires HHVM >= 3.0.0 to build.
+Installation requires a copy of HHVM (__version >= 3.0.0__)to be **built from source** on the local machine, instructions
+on how to do this are available on the [HipHop Wiki][fb-wiki].
 
-Secondly, ensure that libmongoc is installed. Instructions for installing
+Secondly, ensure that libmongoc (__version >= 0.94.0__) is installed. This should automatically install libbson. Instructions for installing
 libmongoc may be found [here](https://github.com/mongodb/mongo-c-driver#fetch-sources-and-build).
 
 ## Building and installation

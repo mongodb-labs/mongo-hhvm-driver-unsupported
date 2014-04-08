@@ -9,13 +9,16 @@ class MongoCollection {
   /* Constants */
   const ASCENDING = 1 ;
   const DESCENDING = -1 ;
+  
   /* Fields */
+  private $db = NULL;
+  private $w;
+  private $wtimeout;
 
-  public $db = NULL;
-  public $w;
-  public $wtimeout;
-
+  /* Variables */
   private $name;
+  private $slaveOkay = false;
+  private $read_preference = [];
 
   /**
    * Perform an aggregation using the aggregation framework
@@ -27,8 +30,13 @@ class MongoCollection {
    * @return array - The result of the aggregation as an array. The ok
    *   will be set to 1 on success, 0 on failure.
    */
-  <<__Native>>
-  public function aggregate(array $pipeline): array;
+  public function aggregate(array $pipeline): array {
+    $cmd = [ 
+      'aggregate' => $this->name,
+      'pipeline' => $pipeline
+    ];
+    return $this->db->command($cmd);
+  }
 
   /**
    * Inserts multiple documents into this collection
@@ -44,9 +52,11 @@ class MongoCollection {
    *   and any error that may have occurred ("err"). Otherwise, returns
    *   TRUE if the batch insert was successfully sent, FALSE otherwise.
    */
-  <<__Native>>
   public function batchInsert(array $a,
-                              array $options = array()): mixed;
+                              array $options = array()): mixed {
+    throw Exception("Not Implemented");
+  }
+
 
   public function __construct(MongoDB $db, string $name) {
     $this->db = $db;
@@ -60,15 +70,26 @@ class MongoCollection {
    *   fields to match.
    * @param int $limit - limit    Specifies an upper limit to the number
    *   returned.
-   * @param int $skip - skip    Specifies a number of results to skip
+   * @param int $skip - skip    Specifies a number of results to skip 
    *   before starting the count.
    *
    * @return int - Returns the number of documents matching the query.
    */
-  <<__Native>>
   public function count(array $query = array(),
                         int $limit,
-                        int $skip): int;
+                        int $skip): int {
+    $cmd = [ 
+      'count' => $this->name,
+      'query' => $query,
+      'limit' => $limit,
+      'skip' => $skip
+    ];
+    $cmd_result = $this->db->command($cmd);
+    if (!$cmd_result["ok"]) {
+      throw new MongoCursorException();
+    }
+    return $cmd_result["n"];
+  }
 
   /**
    * Creates a database reference
@@ -151,9 +172,12 @@ class MongoCollection {
    *
    * @return MongoCursor - Returns a cursor for the search results.
    */
-  // <<__Native>>
-  // public function find(array $query = array(),
-  //                      array $fields = array()): MongoCursor;
+  public function find(array $query = array(),
+                       array $fields = array()): MongoCursor {
+    $ns = $this->db . "." . $this->name;
+
+    return new MongoCursor($this->db->__getClient(), $ns, $query, $fields);
+  }
 
   /**
    * Update a document and return it
@@ -182,9 +206,10 @@ class MongoCollection {
    *
    * @return array - Returns record matching the search or NULL.
    */
-  <<__Native>>
   public function findOne(array $query = array(),
-                          array $fields = array()): array;
+                          array $fields = array()): array {
+    return [];
+  }
 
   /** TODO
    * Gets a collection
@@ -225,24 +250,27 @@ class MongoCollection {
    *
    * @return string - Returns the name of this collection.
    */
-  <<__Native>>
-  public function getName(): string;
+  public function getName(): string{
+    return $this->name;
+  }
 
   /**
    * Get the read preference for this collection
    *
    * @return array -
    */
-  <<__Native>>
-  public function getReadPreference(): array;
+  public function getReadPreference(): array {
+    return $this->read_preference;
+  }
 
   /**
    * Get slaveOkay setting for this collection
    *
    * @return bool - Returns the value of slaveOkay for this instance.
    */
-  <<__Native>>
-  public function getSlaveOkay(): bool;
+  public function getSlaveOkay(): bool {
+    return $this->slaveOkay;
+  }
 
   /** TODO
    * Performs an operation similar to SQL's GROUP BY command
@@ -323,9 +351,12 @@ class MongoCollection {
    *
    * @return bool -
    */
-  <<__Native>>
   public function setReadPreference(string $read_preference,
-                                    array $tags): bool;
+                                    array $tags): bool {
+    $this->read_preference['type'] = $read_preference;
+    $this->read_preference['tagsets'] = $tags;
+    return true;
+  }
 
   /**
    * Change slaveOkay setting for this collection
@@ -337,8 +368,11 @@ class MongoCollection {
    * @return bool - Returns the former value of slaveOkay for this
    *   instance.
    */
-  <<__Native>>
-  public function setSlaveOkay(bool $ok = true): bool;
+  public function setSlaveOkay(bool $ok = true): bool {
+    $former = $this->slaveOkay;
+    $this->slaveOkay = $ok;
+    return $former;
+  }
 
   /**
    * Converts keys specifying an index to its identifying string
@@ -356,8 +390,9 @@ class MongoCollection {
    *
    * @return string - Returns the full name of this collection.
    */
-  <<__Native>>
-  public function __toString(): string;
+  public function __toString(): string {
+    return $this->name;
+  }
 
   /**
    * Update records based on a given criteria
