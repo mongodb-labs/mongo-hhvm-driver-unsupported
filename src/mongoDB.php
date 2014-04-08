@@ -182,7 +182,7 @@ class MongoDB {
         return $this->client;
     }
 
-    /** TODO
+    /** TODO: Handle system collections
      * Get all collections from this database
      *
      * @param bool $includeSystemCollections -
@@ -190,8 +190,24 @@ class MongoDB {
      * @return array - Returns the names of the all the collections in the
      *   database as an array.
      */
-    <<__Native>>
-    public function getCollectionNames(bool $includeSystemCollections = false): array;
+    public function getCollectionNames(bool $includeSystemCollections = false): array {
+        $allCollections = [];
+        $db_name_length = strlen($this->db_name) + 1;
+        $c = $this->selectCollection("system.namespaces")->find();
+        while ($c->hasNext()) {
+            $c->next();
+            $curr_coll = $c->current();
+            $name = $curr_coll["name"];
+
+            if (strpos("$", $name) >= 0 && strpos(".oplog.$") === false) {
+                continue;
+            }
+
+            $allCollections[] = substr($name, $db_name_length);
+        }
+        sort($allCollections);
+        return $allCollections;
+    }
 
     /**
      * Fetches the document pointed to by a database reference
@@ -252,15 +268,22 @@ class MongoDB {
         return $this->command(array('getLastError' => 1));
     }
 
-    /** TODO
+    /** TODO: handle system collections
      * Gets an array of all MongoCollections for this database
      *
      * @param bool $includeSystemCollections -
      *
      * @return array - Returns an array of MongoCollection objects.
      */
-    <<__Native>>
-    public function listCollections(bool $includeSystemCollections = false): array;
+    public function listCollections(bool $includeSystemCollections = false): array {
+        $collection_names = $this->getCollectionNames();
+        foreach ($collection_names as $name) {
+            if (!isset($this->collections[$name])) {
+                $this->collections[$name] = new MongoCollection($this, $name);
+            }
+        }
+        return $this->collections;
+    }
 
     /** TODO: Will be deprecated soon
      * Checks for the last error thrown during a database operation
@@ -296,7 +319,7 @@ class MongoDB {
         return $this->command(array('reseterror' => 1));
     }
 
-    /** TODO: 
+    /**
      * Gets a collection
      *
      * @param string $name - name    The collection name.

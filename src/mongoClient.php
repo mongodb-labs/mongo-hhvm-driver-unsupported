@@ -133,7 +133,7 @@ class MongoClient {
     return $this->selectDB($db)->selectCollection($collection);
   }
 
-  /** TODO: Do we need to create a fake database and then query it?
+  /**
    * Gets a database
    *
    * @param string $name - name    The database name.
