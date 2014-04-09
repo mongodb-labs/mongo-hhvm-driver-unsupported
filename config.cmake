@@ -25,7 +25,7 @@ ENDIF()
 include_directories(${MONGOC_INCLUDE_DIR})
 include_directories(${BSON_INCLUDE_DIR})
 
-HHVM_EXTENSION(mongo src/ext_mongo.cpp src/mongo_common.cpp src/mongoClient.cpp src/mongoCursor.cpp)
+HHVM_EXTENSION(mongo src/ext_mongo.cpp src/mongo_common.cpp src/mongoClient.cpp src/mongoCursor.cpp src/mongoCollection.cpp)
 HHVM_SYSTEMLIB(mongo mongo.php)
 
 target_link_libraries(mongo ${MONGOC_LIBRARY})

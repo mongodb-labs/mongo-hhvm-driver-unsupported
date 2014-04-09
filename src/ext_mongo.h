@@ -21,6 +21,7 @@ public:
 
     _initMongoClientClass();
     _initMongoCursorClass();
+    _initMongoCollectionClass();
     
     loadSystemlib();
   }
@@ -28,6 +29,7 @@ public:
 private:
   void _initMongoClientClass();
   void _initMongoCursorClass();
+  void _initMongoCollectionClass();
 };
 
 } // namespace HPHP
