@@ -79,8 +79,7 @@ cbson_loads_visit_oid (const bson_iter_t *iter,
   char id[25];
   bson_oid_to_string(oid, id);
   
-    output->add(String(key), id);
-  }
+  output->add(String(key), id);
   return false;
 }
 
@@ -179,6 +178,24 @@ cbson_loads (bson_t * bson)
   bson_iter_visit_all(&iter, &gLoadsVisitors, &ret);
 
   return ret;
+}
+
+static void Array *
+cbson_loads_from_string (const String& bson) 
+{
+  bson_reader_t * reader;
+  const bson_t * obj;
+  bool reached_eof;
+
+  Array output = Array();
+
+  reader = bson_reader_new_from_data((uint8_t *)bson.c_str(), bson.size());
+  obj = bson_reader_read(reader, &reached_eof);
+
+  cbson_loads(obj, &output);
+  bson_reader_destroy(reader);
+
+  return output;
 }
 // Namespace
 }
