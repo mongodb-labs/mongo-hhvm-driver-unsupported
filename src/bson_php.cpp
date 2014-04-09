@@ -113,7 +113,7 @@ cbson_loads_visit_document (const bson_iter_t *iter,
     obj = Array();
     if (!bson_iter_visit_all(&child, &gLoadsVisitors, &obj))
     {
-      ret->add(String(key, obj))
+      ret->add(String(key, obj));
     }
   }
 
@@ -139,24 +139,27 @@ cbson_loads_visit_array (const bson_iter_t *iter,
     obj = Array();
     if (!bson_iter_visit_all(&child, &gLoadsVisitors, &obj))
     {
-      ret->add(String(key, obj))
+      ret->add(String(key, obj));
     }
   }
   return false;
 }
-
-static const bson_visitor_t gLoadsVisitors = 
+extern "C": 
 {
-   .visit_double = cbson_loads_visit_double,
-   .visit_int32 = cbson_loads_visit_int32,
-   .visit_utf8 = cbson_loads_visit_utf8,
-   .visit_bool = cbson_loads_visit_bool,
-   .visit_int64 = cbson_loads_visit_int64,
-   .visit_null = cbson_loads_visit_null,
-   .visit_oid = cbson_loads_visit_oid,
-   .visit_array = cbson_loads_visit_array,
-   .visit_document = cbson_loads_visit_document;
-};
+  static const bson_visitor_t gLoadsVisitors = 
+    {
+       .visit_double = cbson_loads_visit_double,
+       .visit_int32 = cbson_loads_visit_int32,
+       .visit_utf8 = cbson_loads_visit_utf8,
+       .visit_bool = cbson_loads_visit_bool,
+       .visit_int64 = cbson_loads_visit_int64,
+       .visit_null = cbson_loads_visit_null,
+       .visit_oid = cbson_loads_visit_oid,
+       .visit_array = cbson_loads_visit_array,
+       .visit_document = cbson_loads_visit_document;
+    };
+}
+
 
 static void Array *
 cbson_loads (bson_t * bson) 
