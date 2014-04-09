@@ -38,16 +38,6 @@ cbson_loads_visit_bool (const bson_iter_t *iter,
 
 
 static bool
-cbson_loads_visit_array (const bson_iter_t *iter,
-                        const char        *key,
-                        const bson_t     v_array,
-                        Array           *output)
-{
-   output->add(String(key), v_array)
-   return false;
-}
-
-static bool
 cbson_loads_visit_double (const bson_iter_t *iter,
                           const char        *key,
                           double             v_double,
@@ -144,7 +134,7 @@ cbson_loads_visit_array (const bson_iter_t *iter,
   bson_return_val_if_fail(key, true);
   bson_return_val_if_fail(v_array, true);
 
-  if (bson_iter_init(&child, v_document))
+  if (bson_iter_init(&child, v_array))
   {
     obj = Array();
     if (!bson_iter_visit_all(&child, &gLoadsVisitors, &obj))
@@ -160,7 +150,6 @@ static const bson_visitor_t gLoadsVisitors =
    .visit_double = cbson_loads_visit_double,
    .visit_int32 = cbson_loads_visit_int32,
    .visit_utf8 = cbson_loads_visit_utf8,
-   .visit_array = cbson_loads_visit_array,
    .visit_bool = cbson_loads_visit_bool,
    .visit_int64 = cbson_loads_visit_int64,
    .visit_null = cbson_loads_visit_null,
