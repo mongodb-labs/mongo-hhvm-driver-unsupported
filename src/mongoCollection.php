@@ -113,8 +113,10 @@ class MongoCollection {
    *
    * @return array - Returns the database response.
    */
-  <<__Native>>
-  public function deleteIndex(mixed $keys): array;
+  public function deleteIndex(mixed $keys): array {
+    $index = $this->toIndexString($keys);
+    return $this->db->command(array("deleteIndexes" => $this->getName(), "index" => $index));
+  }
 
   /**
    * Delete all indices for this collection
@@ -250,7 +252,7 @@ class MongoCollection {
    *
    * @return string - Returns the name of this collection.
    */
-  public function getName(): string{
+  public function getName(): string {
     return $this->name;
   }
 
@@ -375,6 +377,7 @@ class MongoCollection {
   }
 
   /**
+   * TODO: Enforce only scalar value types
    * Converts keys specifying an index to its identifying string
    *
    * @param mixed $keys - keys    Field or fields to convert to the
@@ -382,8 +385,29 @@ class MongoCollection {
    *
    * @return string - Returns a string that describes the index.
    */
-  <<__Native>>
-  static protected function toIndexString(mixed $keys): string;
+  static protected function toIndexString(mixed $keys): string {
+    $str = "";
+    
+    if (gettype($keys) == "array") {
+
+      foreach ($keys as $key => $val) {        
+        // order must be ascending (1) for boolean field
+        if (gettype($val) == "boolean")
+          $val = 1;
+
+        if ($key === key($keys)) {
+          $str .= $key . "_" . $val;
+        }
+        else {
+          $str .= "_" . $key . "_" . $val;
+        }
+      }
+    } else {
+      // if $keys is just a string, append _1 as value
+      $str .= $keys . "_1";
+    }
+    return $str;
+  }
 
   /**
    * String representation of this collection
