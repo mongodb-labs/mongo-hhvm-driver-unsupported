@@ -1,5 +1,6 @@
 #include <bson.h>
 #include <stdio.h>
+#include "mongo_classes.h"
 // TODO: Figure out how to include HHVM runtime stuffs
 // #include "../../hphp/runtime/base/base-includes.h"
 // #include "../../hphp/util/lock.h"
@@ -67,9 +68,8 @@ cbson_loads_visit_null (const bson_iter_t *iter,
   return false;
 } 
 
-// Currently storing ObjectID as array of chars
-// should probably implement a MongoId class for
-// C++ instead.
+// TODO: not sure how to instantiate the classes
+// that Marco created
 static bool
 cbson_loads_visit_oid (const bson_iter_t *iter,
                        const char        *key,
@@ -79,8 +79,8 @@ cbson_loads_visit_oid (const bson_iter_t *iter,
   char id[25];
   bson_oid_to_string(oid, id);
   
-  output->add(String(key), id);
-  return false;
+  bson_to_object(iter, output, &s_MongoId, 
+    make_packed_array(String(id)));
 }
 
 // TODO: Add Support for Date-Time
@@ -143,6 +143,7 @@ cbson_loads_visit_array (const bson_iter_t *iter,
   }
   return false;
 }
+
 extern "C": 
 {
   static const bson_visitor_t gLoadsVisitors = 
@@ -180,6 +181,33 @@ cbson_loads (bson_t * bson)
   return ret;
 }
 
+// Helper Function to build Objects
+// adapted from HNI
+static ObjectData * 
+create_object(const StaticString * className, Array params)
+{
+  Class * cls = Unit::loadClass(className -> get());
+  ObjectData * obj = ObjectData::newInstance(cls);
+  obj->incRefCount();
+
+  g_context->invokeFunc(
+    &ret,
+    cls->getCtor(),
+    params,
+    obj
+  );
+}
+
+static void 
+bson_to_object(bson_iter_t * iter, 
+                Array * output,
+                const StaticString * className,
+                Array params)
+{
+  output->add( String(bson_iter_key(iter)),
+               create_object(className, params));
+}
+
 static void Array *
 cbson_loads_from_string (const String& bson) 
 {
@@ -201,15 +229,15 @@ cbson_loads_from_string (const String& bson)
 }
 
 // Function used for testing
-int main(int argc, char **argv)
-{
-  bson_t b[1];
-  bson_init( b );
-  BSON_APPEND_INT32( b, "int32", 1001);
-  BSON_APPEND_INT64( b, "int64", 999999);
-  BSON_APPEND_UTF8(b, "string", "test string");
-  BSON_APPEND_BOOL(b, "boolean", true);
-  printf("number of keys is %d\n", bson_count_keys(b));
-  cbson_loads(b);
-  bson_destroy( b );
-}
+// int main(int argc, char **argv)
+// {
+//   bson_t b[1];
+//   bson_init( b );
+//   BSON_APPEND_INT32( b, "int32", 1001);
+//   BSON_APPEND_INT64( b, "int64", 999999);
+//   BSON_APPEND_UTF8(b, "string", "test string");
+//   BSON_APPEND_BOOL(b, "boolean", true);
+//   printf("number of keys is %d\n", bson_count_keys(b));
+//   cbson_loads(b);
+//   bson_destroy( b );
+// }
