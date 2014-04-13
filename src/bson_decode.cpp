@@ -197,7 +197,7 @@ extern "C":
 }
 
 
-static void Array *
+static Array
 cbson_loads (bson_t * bson) 
 {
   const bson_t * b;
@@ -242,7 +242,7 @@ bson_to_object(bson_iter_t * iter,
                create_object(className, params));
 }
 
-static void Array *
+static Array
 cbson_loads_from_string (const String& bson) 
 {
   bson_reader_t * reader;

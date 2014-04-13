@@ -3,7 +3,7 @@
 
 namespace HPHP {
   
-  static void Array *
+  static Array
   cbson_loads_from_string(const String& bson);
   
 }
