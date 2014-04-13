@@ -1,9 +1,7 @@
 #include <bson.h>
-#include <stdio.h>
+// #include <stdio.h>
 #include "mongo_classes.h"
-// TODO: Figure out how to include HHVM runtime stuffs
-// #include "../../hphp/runtime/base/base-includes.h"
-// #include "../../hphp/util/lock.h"
+#include "hphp/runtime/base/base-includes.h"
 
 namespace HPHP {
 
@@ -81,17 +79,22 @@ cbson_loads_visit_oid (const bson_iter_t *iter,
   
   bson_to_object(iter, output, &s_MongoId, 
     make_packed_array(String(id)));
+  return false;
 }
 
-// TODO: Add Support for Date-Time
-// static bool
-// cbson_loads_visit_date_time (const bson_iter_t *iter,
-//                              const char        *key,
-//                              int64_t       msec_since_epoch,
-//                              void              *data)
-// {
+static bool
+cbson_loads_visit_date_time (const bson_iter_t *iter,
+                             const char        *key,
+                             int64_t       msec_since_epoch,
+                             Array              *output)
+{
+  // Renaming for convenience
+  int64_t msec = msec_since_epoch;
+  bson_to_object(iter, output, &_MongoDate,
+    make_packed_array(msec / 1000, (msec % 1000) * 1000));
 
-// }
+  return false;
+}
 
 static bool
 cbson_loads_visit_document (const bson_iter_t *iter,
@@ -144,6 +147,36 @@ cbson_loads_visit_array (const bson_iter_t *iter,
   return false;
 }
 
+static bool
+cbson_loads_visit_regex (const bson_iter_t *iter,
+                         const char        *key,
+                         const char        *regex,
+                         const char        *options,
+                         Array              *output)
+{
+  String regex_string = "/" + String(regex) + "/" + String(options);
+
+  bson_to_object(iter, output, &_MongoRegex,
+    make_packed_array(regex_string));
+
+  return false;
+}
+
+// Not implemented in cbson.c
+static bool
+cbson_loads_visit_timestamp (const bson_iter_t *iter,
+                             const char        *key,
+                             uint32_t          *timestamp,
+                             uint32_t          *increment,
+                             Array             *output)
+{
+  bson_to_object(iter, output, &_MongoTimestamp,
+    make_packed_array((int64_t)timestamp, (int64_t)increment));
+  
+  return false;
+}
+
+
 extern "C": 
 {
   static const bson_visitor_t gLoadsVisitors = 
@@ -156,7 +189,10 @@ extern "C":
        .visit_null = cbson_loads_visit_null,
        .visit_oid = cbson_loads_visit_oid,
        .visit_array = cbson_loads_visit_array,
-       .visit_document = cbson_loads_visit_document;
+       .visit_document = cbson_loads_visit_document,
+       .visit_date_time = cbson_loads_date_time,
+       .visit_regex = cbson_loads_visit_regex,
+       .visit_timestamp = cbson_loads_visit_timestamp,
     };
 }
 
@@ -181,8 +217,6 @@ cbson_loads (bson_t * bson)
   return ret;
 }
 
-// Helper Function to build Objects
-// adapted from HNI
 static ObjectData * 
 create_object(const StaticString * className, Array params)
 {
