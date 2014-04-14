@@ -178,6 +178,10 @@ class MongoDB {
         return $this->selectCollection($name);
     }
 
+    public function __getDBName(): string {
+        return $this->db_name;
+    }
+
     public function __getClient(): MongoClient {
         return $this->client;
     }

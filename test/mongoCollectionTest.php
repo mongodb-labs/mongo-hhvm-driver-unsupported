@@ -3,12 +3,11 @@
 class MongoCollectionTest extends MongoTestCase {
 
 	public function testMongoCollection() {
-		printf("Running testMongoCollection\n");
-		$cli = new MongoClient();
-		$database_name = "Fake database";
-		$db = new MongoDB($cli, $database_name);
-		$coll_name = "Fake collection";
-		$coll = new MongoCollection($db, $coll_name);
-		printf("Ended testMongoCollection\n\n");
+		printf("Starting %s\n", __FUNCTION__);
+		$cli = $this->getTestClient();
+		$db = $this->getTestDB();
+		$coll_name = "students";
+		$coll = $db->__get($coll_name);
+		printf("Ending %s\n", __FUNCTION__);
 	}
 }
