@@ -12,15 +12,8 @@
 
 class MongoDate
 {
-	/**
-	* @var int
-	*/
-	public $sec ;
-
-	/**
-	* @var int
-	*/
-	public $usec ;
+	public $sec;
+	public $usec;
 
 	/**
 	* Creates a new date.
