@@ -1,4 +1,4 @@
 <?hh
 
 <<__Native>>
-public function bson_decode(string $bson): array;
+function bson_decode(string $bson): array;
