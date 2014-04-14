@@ -1,4 +1,5 @@
 #include "bson_decode.h"
+#include "bson_encode.h"
 
 namespace HPHP {
 
@@ -7,5 +8,12 @@ namespace HPHP {
     return cbson_loads_from_string(bson);
   }
 
+  static String HHVM_FUNCTION(bson_encode, const Variant& anything) {
+    bson_t bson;
+    bson_init(&bson);
+    fillBSONWithArray(anything.toArray(), &bson);
 
+    const char* output = (const char*) bson_get_data(&bson);        
+    return String(output, bson.len, CopyString);
+  }
 }
