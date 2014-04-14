@@ -2,6 +2,7 @@
 // #include <stdio.h>
 #include "mongo_classes.h"
 #include "hphp/runtime/base/base-includes.h"
+#include "bson_decode.h"
 
 namespace HPHP {
 
