@@ -5,15 +5,22 @@
 
 namespace HPHP {
 
-// static void 
-// bson_to_object(const bson_iter_t * iter, 
-//                 Array * output,
-//                 const StaticString * className,
-//                 Array params)
-// {
-//   output->add( String(bson_iter_key(iter)),
-//                create_object(className, params));
-// }
+static ObjectData * 
+create_object(const StaticString * className, Array params)
+{
+  TypedValue ret;
+  Class * cls = Unit::loadClass(className -> get());
+  ObjectData * obj = ObjectData::newInstance(cls);
+  obj->incRefCount();
+
+  g_context->invokeFunc(
+    &ret,
+    cls->getCtor(),
+    params,
+    obj
+  );
+  return obj;
+}
 
 static bool
 cbson_loads_visit_int32 (const bson_iter_t *iter,
@@ -127,8 +134,8 @@ cbson_loads_visit_regex (const bson_iter_t *iter,
 static bool
 cbson_loads_visit_timestamp (const bson_iter_t *iter,
                              const char        *key,
-                             uint32_t          *timestamp,
-                             uint32_t          *increment,
+                             uint32_t          timestamp,
+                             uint32_t          increment,
                              void              *output)
 {
   ObjectData * data = create_object(&s_MongoTimestamp,
@@ -245,24 +252,8 @@ cbson_loads (const bson_t * bson)
 
   return ret;
 }
-
 // Adapted from HNI
-static ObjectData * 
-create_object(const StaticString * className, Array params)
-{
-  TypedValue ret;
-  Class * cls = Unit::loadClass(className -> get());
-  ObjectData * obj = ObjectData::newInstance(cls);
-  obj->incRefCount();
 
-  g_context->invokeFunc(
-    &ret,
-    cls->getCtor(),
-    params,
-    obj
-  );
-  return obj;
-}
 
 Array
 cbson_loads_from_string (const String& bson) 
