@@ -11,6 +11,7 @@ class MongoDB {
     private $db_name = "";
     private $slaveOkay = false;
     private $read_preference = [];
+    private $write_concern = [];
 
     /**
      * Log in to this database
@@ -377,6 +378,16 @@ class MongoDB {
         $former = $this->slaveOkay;
         $this->slaveOkay = $ok;
         return $former;
+    }
+
+    public function setWriteConcern(mixed $w, int $timeout = 10000) {
+        if( !is_integer($w) || !is_string($w)) {
+            throw Exception("Invalid argument to set write concern");
+        }
+        $this->writeConcern["w"] = $w;
+        if (!isset($this->writeConcern["timeout"])) {
+            $this->writeConcern["timeout"] = $timeout;
+        }
     }
 
     /**
