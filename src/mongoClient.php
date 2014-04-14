@@ -5,6 +5,9 @@
  */
 class MongoClient {
 
+  private $read_preference = [];
+  private $databases = [];
+
   <<__Native>>
   public function __construct (string $server = "mongodb://localhost:27017", 
                                 array $options = array('connect' => true)): void;
@@ -40,8 +43,16 @@ class MongoClient {
    *
    * @return array - Returns the database response.
    */
-  <<__Native>>
-  public function dropDB(mixed $db): array;
+  public function dropDB(mixed $db): array {
+    if(is_object($db)) {
+      return $db->drop();
+    } 
+
+    if(is_string($db)) {
+      return $this->selectDB($db)->drop();
+    }
+    throw new MongoConnectionException();
+  }
 
   /**
    * Gets a database
@@ -50,8 +61,9 @@ class MongoClient {
    *
    * @return MongoDB - Returns a new db object.
    */
-  <<__Native>>
-  public function __get(string $dbname): object;
+  public function __get(string $dbname): MongoDB {
+    return $this->selectDB($dbname);
+  }
 
   /**
    * Return info about all open connections
@@ -75,8 +87,9 @@ class MongoClient {
    *
    * @return array -
    */
-  <<__Native>>
-  public function getReadPreference(): array;
+  public function getReadPreference(): array {
+    return $this->read_preference;
+  }
 
   /**
    * Kills a specific cursor on the server
@@ -103,8 +116,9 @@ class MongoClient {
    *   it's empty. The other two fields are totalSize (in bytes) and ok,
    *   which is 1 if this method ran successfully.
    */
-  <<__Native>>
-  public function listDBs(): array;
+  public function listDBs(): array {
+    return $this->selectDB('admin')->command(array("listDatabases" => 1));
+  }
 
   /**
    * Gets a database collection
@@ -114,9 +128,10 @@ class MongoClient {
    *
    * @return MongoCollection - Returns a new collection object.
    */
-  <<__Native>>
   public function selectCollection(string $db,
-                                   string $collection): object;
+                                   string $collection) {
+    return $this->selectDB($db)->selectCollection($collection);
+  }
 
   /**
    * Gets a database
@@ -125,8 +140,12 @@ class MongoClient {
    *
    * @return MongoDB - Returns a new database object.
    */
-  <<__Native>>
-  public function selectDB(string $name): object;
+  public function selectDB(string $name): MongoDB {
+    if (!isset($this->databases[$name])) {
+      $this->databases[$name] = new MongoDB($this, $name);
+    } 
+    return $this->databases[$name];
+  }
 
   /**
    * Set the read preference for this connection
@@ -136,9 +155,12 @@ class MongoClient {
    *
    * @return bool -
    */
-  <<__Native>>
   public function setReadPreference(string $read_preference,
-                                    array $tags): bool;
+                                    array $tags): bool {
+    $this->read_preference['type'] = $read_preference;
+    $this->read_preference['tagsets'] = $tags;
+    return true;
+  }
 
   /**
    * String representation of this connection

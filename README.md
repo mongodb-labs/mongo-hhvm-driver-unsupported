@@ -1,52 +1,69 @@
-MongoDB Extension for HipHop (HHVM)
-==================================
+# MongoDB driver for HHVM
 
-This is an implementation of the `MongoDB` PHP extension for the [HipHop PHP VM][fb-hphp].
+This is an implementation of the
+[MongoDB PHP driver](https://github.com/mongodb/mongo-php-driver) for
+[HHVM](https://github.com/facebook/hhvm). It is not feature-complete and should
+be considered experimental.
 
-## Prerequisites
+## Dependencies
+
+Compiling this extension requires the following libraries:
+
+ * HHVM (>=3.0.0) must be compiled from source, since the binary distributions
+   of HHVM do not include necessary development headers. Instructions for
+   compiling HHVM may be found
+   [here](https://github.com/facebook/hhvm/wiki#building-hhvm).
+
+ * libmongoc (>=0.94.0) and its corresponding libbson dependency must be
+   installed as a system library. Instructions for installing libmongoc may be
+   found
+   [here](https://github.com/mongodb/mongo-c-driver#fetch-sources-and-build).
 
 ## Building and installation
 
-Installation requires a copy of HipHop to be **built from source** on the local machine, instructions
-on how to do this are available on the [HipHop Wiki][fb-wiki]. Once done, the following commands
-will build the extension.
+Ensure that the `HPHP_HOME` environment variable is set to the HHVM project
+directory. This should be the path to the cloned HHVM git repository where you
+compiled the project.
 
-Firstly, ensure that the `$HPHP_HOME` env var has been set:
+```bash
+$ export HPHP_HOME=/path/to/hhvm
+```
 
-~~~
-export HPHP_HOME=/path/to/hhvm
-~~~~
+Execute this project's `build.sh` script:
 
-Secondly, ensure that libmongoc is installed. Instructions for installing
-libmongoc may be found [here](https://github.com/mongodb/mongo-c-driver#fetch-sources-and-build).
-
-Then the build proper:
-
-~~~
-$ cd /path/to/extension
-$ $HPHP_HOME/hphp/tools/hphpize/hphpize
-$ cmake .
+```bash
 $ ./build.sh
-~~~
+```
 
-This will produce a `mongo.so` file, the dynamically-loadable extension. For now, please use the build script to make the files from inside the extension folder.
+This script checks for the HHVM path, executes `hphpize` to prepare the build
+process, and finally executes `cmake` and `make` to compile the extension.
 
-To enable and test the extension, run ./test.sh.
+The build process will produce a `mongo.so` file, which can then be dynamically
+loaded by HHVM by adding the following to HHVM's `config.hdf` file:
+
+```
+DynamicExtensions {
+  mongo = /path/to/mongo.so
+}
+```
+
+This example is taken from the
+[Extension API](https://github.com/facebook/hhvm/wiki/Extension-API)
+documentation.
+
+Note that the `mongo` key in this example is a placeholder; HHVM only cares that
+the path to the `mongo.so` file is correct. You may notice that in our test
+script, we use `0` as a key when specifying our extension via the command line.
 
 ## Tests
-Download and install [PHPUnit](http://phpunit.de/getting-started.html). Ensure that the phpunit binary is located at /usr/local/bin/phpunit. The following script will run the test suite.
 
-~~~
+The test suite is implemented with [PHPUnit](http://phpunit.de) and may be
+executed via the `test.sh` script:
+
+```
 $ ./test.sh
-~~~
+```
 
-From the shell (assuming that you're in the mongo-hhvm-driver folder, and the config.hdf file is in there too), run the following to make sure that the dummy extension is set up properly.
-
-~~~
-${HPHP_HOME}/hphp/hhvm/hhvm /usr/local/bin/phpunit test/mongoTest.php --config config.hdf
-~~~
-
-## Documentation
-
-[fb-hphp]: https://github.com/facebook/hhvm "HipHop PHP"
-[fb-wiki]: https://github.com/facebook/hhvm/wiki "HipHop Wiki"
+The test script depends on the `HPHP_HOME` environment variable and will attempt
+to locate PHPUnit via the `which` command, so ensure that the `phpunit` binary
+is installed in an executable path.

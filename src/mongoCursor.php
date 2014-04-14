@@ -7,19 +7,77 @@
 class MongoCursor {
 
   /* variables */
-
-  private $wait = true;
   private $batchSize = 100;
+  private $connection = null;
+  private $dead = false;
+  private $wait = true;
   private $fields = [];
-  private $query = [];
+  private $flags = [];
+  private $immortal = false;
   private $limit = 0;
-  private $skip = 0;
-  private $queryTimeout = null;
-  private $started_iterating = false;
-  private $tailable = false;
   private $ns = null;
   private $partialResultsOK = false;
+  private $query = [];
+  private $timeout = 100;
+  private $read_preference = [];
+  private $skip = 0;
   private $slaveOkay = false;
+  private $started_iterating = false;
+  private $tailable = false;
+
+  // NATIVE FUNCTIONS
+  /**
+   * Returns the current element
+   *
+   * @return array - The current result as an associative array.
+   */
+  <<__Native>>
+  public function current(): array;
+
+  /**
+   * Checks if there are any more elements in this cursor.
+   * May be hard to do in both php and c++
+   *
+   * @return bool - Returns if there is another element.
+   */
+  <<__Native>>
+  public function hasNext(): bool;
+
+  /**
+   * Advances the cursor to the next result
+   *
+   * @return void - NULL.
+   */
+  <<__Native>>
+  public function next(): void;
+
+  /**
+   * Clears the cursor
+   *
+   * @return void - NULL.
+   */
+  <<__Native>>
+  public function reset(): void;
+
+  /**
+   * Returns the cursor to the beginning of the result set
+   *
+   * @return void - NULL.
+   */
+  <<__Native>>
+  public function rewind(): void;
+
+  /**
+   * Checks if the cursor is reading a valid result.
+   *
+   * @return bool - If the current result is not null.
+   */
+  <<__Native>>
+  public function valid(): bool;
+
+
+
+  //NON-NATIVE FUNCTIONS
 
   /**
    * Adds a top-level key/value pair to a query
@@ -31,7 +89,7 @@ class MongoCursor {
    */
   public function addOption(string $key,
                             mixed $value): MongoCursor {
-    if ($started_iterating) {
+    if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
     $this->query[$key] = $value;
@@ -48,7 +106,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function awaitData(bool $wait = true): MongoCursor {
-    $this->$wait = $wait;
+    $this->wait = $wait;
     return $this;
   }
 
@@ -81,11 +139,17 @@ class MongoCursor {
    *
    * @return  - Returns the new cursor.
    */
-  <<__Native>>
+
   public function __construct(MongoClient $connection,
                               string $ns,
                               array $query = array(),
-                              array $fields = array()): void;
+                              array $fields = array()) {
+    $this->connection = $connection;
+    $this->ns = $ns;
+    $this->query = $query;
+    $this->fields = $fields;
+
+  }
 
   /**
    * Counts the number of results for this query
@@ -95,16 +159,28 @@ class MongoCursor {
    * @return int - The number of documents returned by this cursor's
    *   query.
    */
-  <<__Native>>
-  public function count(bool $foundOnly = false): int;
+  public function count(bool $foundOnly = false): int {
+    $pieces = explode($this->ns);
+    $db_name = $pieces[0];
+    $collection_name = $pieces[1];
 
-  /**
-   * Returns the current element
-   *
-   * @return array - The current result as an associative array.
-   */
-  <<__Native>>
-  public function current(): array;
+    $db = $this->connection->selectDB($db_name);
+    $query = ["count" => $collection_name];
+    if ($foundOnly) {
+      if ($this->limit > 0) {
+        $query["limit"] = $this->limit;
+      }
+      if ($this->skip > 0) {
+        $query["skip"] = $this->skip;
+      }
+    } 
+
+    $command_result = $db->command($query);
+    if (!$command_result["ok"]) {
+      throw new MongoCursorException();
+    }
+    return $command_result["n"];
+  }
 
   /**
    * Checks if there are documents that have not been sent yet from the
@@ -113,25 +189,21 @@ class MongoCursor {
    * @return bool - Returns if there are more results that have not been
    *   sent to the client, yet.
    */
-  <<__Native>>
-  public function dead(): bool;
-
-  /**
-   * Execute the query.
-   *
-   * @return void - NULL.
-   */
-  <<__Native>>
-  protected function doQuery(): void;
-
+  public function dead(): bool {
+    return $this->dead;
+  }
+ 
   /**
    * Return an explanation of the query, often useful for optimization and
    * debugging
    *
    * @return array - Returns an explanation of the query.
    */
-  <<__Native>>
-  public function explain(): array;
+  public function explain(): array {
+    $this->query['$explain'] = true;
+    $this->rewind();
+    return $this->current();
+  }
 
   /**
    * Sets the fields for a query
@@ -141,6 +213,9 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function fields(array $fields) {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to change fields after started iterating");
+    }
     $this->fields = $fields;
     return $this;
   }
@@ -152,10 +227,14 @@ class MongoCursor {
    * @return array - Returns the next object.
    */
   public function getNext(): array {
-    $current_record = $this->current();
-    $this->next();
-
-    return $current_record;
+    if ($this->valid()) {
+      $current_record = $this->current();
+      $this->next();
+      return $current_record;
+    } else {
+      throw new MongoCursorException();
+    }
+    
   }
 
   /**
@@ -163,16 +242,9 @@ class MongoCursor {
    *
    * @return array -
    */
-  <<__Native>>
-  public function getReadPreference(): array;
-
-  /**
-   * Checks if there are any more elements in this cursor
-   *
-   * @return bool - Returns if there is another element.
-   */
-  <<__Native>>
-  public function hasNext(): bool;
+  public function getReadPreference(): array {
+    return $this->read_preference;
+  }
 
   /**
    * Gives the database a hint about the query
@@ -185,8 +257,19 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function hint(mixed $index): object;
+  public function hint(mixed $index): MongoCursor {
+
+    if (is_object($index)) {
+      $index = get_object_vars($index);
+    }
+
+    if (is_array($index)) {
+      $index = MongoCollection::_toIndexString($index);
+    }
+
+    $this->query['$hint'] = $index;
+    return $this;
+  }
 
   /**
    * Sets whether this cursor will timeout
@@ -196,8 +279,14 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
-  public function immortal(bool $liveForever = true): object;
+  public function immortal(bool $liveForever = true): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
+
+    $this->immortal = $liveForever;
+    return $this;
+  }
 
   /**
    * Gets the query, fields, limit, and skip for this cursor
@@ -206,12 +295,15 @@ class MongoCursor {
    *   fields for this cursor.
    */
   public function info(): array {
-    $info = [];
-    $info["ns"] = $this->ns;
-    $info["limit"] = $this->limit;
-    $info["skip"] = $this->skip;
-    $info["query"] = $this->query;
-    $info["fields"] = $this->fields;
+    $info = [
+      "ns" => $this->ns,
+      "limit" => $this->limit,
+      "batchSize" => $this->batchSize,
+      "skip" => $this->skip,
+      "flags" => $this->flags,
+      "query" => $this->query,
+      "fields" => $this->fields
+    ];
     return $info;
   }
 
@@ -232,17 +324,12 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function limit(int $num) {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->limit = $num;
     return $this;
   }
-
-  /**
-   * Advances the cursor to the next result
-   *
-   * @return void - NULL.
-   */
-  <<__Native>>
-  public function next(): void;
 
   /*
    * If this query should fetch partial results from  if a shard is down
@@ -252,25 +339,12 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function partial(bool $okay = true): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->partialResultsOK = $okay;
     return $this;
   }
-
-  /**
-   * Clears the cursor
-   *
-   * @return void - NULL.
-   */
-  <<__Native>>
-  public function reset(): void;
-
-  /**
-   * Returns the cursor to the beginning of the result set
-   *
-   * @return void - NULL.
-   */
-  <<__Native>>
-  public function rewind(): void;
 
   /**
    * Sets arbitrary flags in case there is no method available the specific
@@ -285,9 +359,14 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
   public function setFlag(int $flag,
-                          bool $set = true): object;
+                          bool $set = true): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
+    $this->flags[$flag] = $set;
+    return $this;
+  }
 
   /**
    * Set the read preference for this query
@@ -297,9 +376,15 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  <<__Native>>
   public function setReadPreference(string $read_preference,
-                                    array $tags): object;
+                                    array $tags): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
+    $this->read_preference['type'] = $read_preference;
+    $this->read_preference['tagsets'] = $tags;
+    return $this;
+  }
 
   /**
    * Skips a number of results
@@ -308,12 +393,15 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  public function skip(int $num) {
+  public function skip(int $num): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->skip = $num;
     return $this;
   }
 
-  /**
+  /** DEPRECATED
    * Sets whether this query can be done on a secondary
    *
    * @param bool $okay - okay    If it is okay to query the secondary.
@@ -321,6 +409,9 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function slaveOkay(bool $okay = true): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->slaveOkay = $okay;
     return $this;
   }
@@ -331,6 +422,9 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function snapshot() {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->query['$snapshot'] = true;
     return $this;
   }
@@ -348,11 +442,14 @@ class MongoCursor {
    *   called on.
    */
   public function sort(array $fields) {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->query['$orderby'] = $fields;
     return $this;
   }
 
-  /**
+  /** TODO: Make sure C++ code closes cursor appropriately
    * Sets whether this cursor will be left open after fetching the last
    * results
    *
@@ -360,29 +457,27 @@ class MongoCursor {
    *
    * @return MongoCursor - Returns this cursor.
    */
-  public function tailable(bool $tail = true) {
+  public function tailable(bool $tail = true): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
     $this->tailable = $tail;
     return $this;
   }
 
-  /**
+  /** TODO: How does query-side timeout work?
    * Sets a client-side timeout for this query
    *
    * @param int $ms -
    *
    * @return MongoCursor - This cursor.
    */
-  public function timeout(int $ms) {
-    $this->queryTimeout = $ms;
+  public function timeout(int $ms): MongoCursor {
+    if ($this->started_iterating) {
+      throw new MongoCursorException("Tried to add an option after started iterating");
+    }
+    $this->timeout = $ms;
     return $this;
   }
-
-  /**
-   * Checks if the cursor is reading a valid result.
-   *
-   * @return bool - If the current result is not null.
-   */
-  <<__Native>>
-  public function valid(): bool;
 
 }

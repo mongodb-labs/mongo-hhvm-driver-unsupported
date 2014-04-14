@@ -6,15 +6,6 @@
 */
 class MongoDBRef {
 
-    private function __construct($collection, $id, $db = null)
-    {
-        $this->{'$ref'} = $collection;
-        $this->{'$id'} = $id;
-        if ($db) {
-            $this->{'$db'} = $db;
-        }
-    }
-
 	/**
 	* Creates a new database reference
 	*
@@ -25,9 +16,18 @@ class MongoDBRef {
 	*
 	* @return array - Returns the reference.
 	*/
-    public static function create($collection, $id, $database = null)
+    public static function create(string $collection, mixed $id, $database = null) : array
     {
-        return new MongoDBRef($collection, $id, $database);
+        $ref = [
+            '$collection' => $collection,
+            '$id' => $id
+        ];
+
+        if (isset($database)) {
+            $ref['$db'] = $database;
+        }
+
+        return $ref;
     }
 
 	/**
@@ -39,13 +39,12 @@ class MongoDBRef {
 	* @return array - Returns the document to which the reference refers
 	* or NULL if the document does not exist (the reference is broken).
 	*/
-    public static function get(MongoDB $db, $ref)
+    public static function get(MongoDB $db, array $ref) : array
     {
-        $ref = (array)$ref;
-        if (!isset($ref['$id']) || !isset($ref['$ref'])) {
+        if (!isset($ref['$id']) || !isset($ref['$collection'])) {
             return;
         }
-        $ns = $ref['$ref'];
+        $ns = $ref['$collection'];
         $id = $ref['$id'];
 
         $refdb = null;
@@ -72,21 +71,16 @@ class MongoDBRef {
 	/**
 	* Checks if an array is a database reference
 	*
-	* @param mixed $ref - Array or object to check.
+	* @param array $ref - Array to check.
 	*
-	* @return bool -
+	* @return bool
 	*/
-    public static function isRef($ref)
+    public static function isRef(array $ref) : bool
     {
-        if (is_array($ref)) {
-            if (isset($ref['$id']) && isset($ref['$ref'])) {
-                return true;
-            }
-        } elseif (is_object($ref)) {
-            if (isset($ref->{'$ref'}) && isset($ref->{'$id'})) {
-                return true;
-            }
+        if (isset($ref['$id']) && isset($ref['collection'])) {
+            return true;
         }
+
         return false;
     }
 }

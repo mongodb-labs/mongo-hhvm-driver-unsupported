@@ -73,7 +73,6 @@ class MongoId
 		}
 
 		$this->id = $id;
-		$this->{'$id'} = $id;
 	}
 
 	private function generateId()

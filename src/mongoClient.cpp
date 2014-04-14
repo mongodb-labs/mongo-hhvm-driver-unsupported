@@ -5,7 +5,7 @@ namespace HPHP {
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoClient
 
-static void HHVM_METHOD(MongoClient, __construct, const String& uri, CArrRef options) {
+static void HHVM_METHOD(MongoClient, __construct, const String& uri, Array options) {
   MongocClient *client = MongocClient::GetPersistent(uri);
 
   if (client == nullptr) {
@@ -20,7 +20,7 @@ static void HHVM_METHOD(MongoClient, __construct, const String& uri, CArrRef opt
   this_->o_set(s_mongoc_client, client, s_mongoclient);
 }
 
-static bool HHVM_METHOD(MongoClient, close, CVarRef connection) {
+static bool HHVM_METHOD(MongoClient, close, Variant connection) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -28,7 +28,7 @@ static bool HHVM_METHOD(MongoClient, connect) {
   throw NotImplementedException("Not Implemented");
 }
 
-static Array HHVM_METHOD(MongoClient, dropDB, CVarRef db) {
+static Array HHVM_METHOD(MongoClient, dropDB, Variant db) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -48,7 +48,7 @@ static Array HHVM_METHOD(MongoClient, getReadPreference) {
   throw NotImplementedException("Not Implemented");
 }
 
-static bool HHVM_METHOD(MongoClient, killCursor, const String& server_hash, CVarRef id) {
+static bool HHVM_METHOD(MongoClient, killCursor, const String& server_hash, Variant id) {
   throw NotImplementedException("Not Implemented");
 }
 
@@ -64,7 +64,7 @@ static Object HHVM_METHOD(MongoClient, selectDB, const String& name) {
   throw NotImplementedException("Not Implemented");
 }
 
-static bool HHVM_METHOD(MongoClient, setReadPreference, const String& read_preference, CArrRef tags) {
+static bool HHVM_METHOD(MongoClient, setReadPreference, const String& read_preference, Array tags) {
   throw NotImplementedException("Not Implemented");
 }
 
