@@ -17,6 +17,7 @@ class mongoExtension : public Extension {
 public:
   mongoExtension() : Extension("mongo") {}
   virtual void moduleInit() {
+
     mongoc_log_set_handler(mongoc_log_handler, NULL);
 
     _initMongoClientClass();
