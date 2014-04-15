@@ -1,6 +1,7 @@
 #include "hphp/runtime/base/base-includes.h"
 #include <bson.h>
 
+// Adapted from HNI Source
 namespace HPHP {
   const StaticString s_MongoDate("MongoDate");
   const StaticString s_MongoId("MongoId");

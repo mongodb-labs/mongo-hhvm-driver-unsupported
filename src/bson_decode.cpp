@@ -5,6 +5,8 @@
 
 namespace HPHP {
 
+// Helper Function to Instantiate Defined Mongo Classes
+// Adapted from HNI example
 static ObjectData * 
 create_object(const StaticString * className, Array params)
 {
@@ -21,37 +23,6 @@ create_object(const StaticString * className, Array params)
   );
   return obj;
 }
-
-static bool
-cbson_loads_visit_int32 (const bson_iter_t *iter,
-                         const char         *key,
-                         int32_t           v_int32,
-                         void             *output)
-{
-  ((Array *) output)->add(String(key), v_int32);
-  return false;
-}
-
-static bool
-cbson_loads_visit_int64 (const bson_iter_t *iter,
-                         const char*        key,
-                         int64_t          v_int64,
-                         void              *output)
-{
-  ((Array *) output)->add(String(key),v_int64);  
-  return false;
-}
-
-static bool
-cbson_loads_visit_bool (const bson_iter_t *iter,
-                        const char        *key,
-                        bool              v_bool,
-                        void              *output)
-{
-  ((Array *) output)->add(String(key), v_bool);
-  return false;
-}
-
 
 static bool
 cbson_loads_visit_double (const bson_iter_t *iter,
@@ -74,14 +45,20 @@ cbson_loads_visit_utf8 (const bson_iter_t *iter,
   return false;
 }
 
+// Pre-declaration so compiler doesn't complain about
+// undefined methods
 static bool
-cbson_loads_visit_null (const bson_iter_t *iter,
-                        const char        *key,                          
-                        void              *output)
-{
-  ((Array *) output)->add(String(key), Variant());
-  return false;
-} 
+cbson_loads_visit_document (const bson_iter_t *iter,
+                            const char        *key,
+                            const bson_t      *v_document,
+                            void              *data);
+
+
+static bool
+cbson_loads_visit_array (const bson_iter_t *iter,
+                         const char        *key,
+                         const bson_t      *v_array,
+                         void              *data);                         
 
 static bool
 cbson_loads_visit_oid (const bson_iter_t *iter,
@@ -94,6 +71,16 @@ cbson_loads_visit_oid (const bson_iter_t *iter,
   ObjectData * data = create_object(&s_MongoId, 
     make_packed_array(String(id)));
   ((Array *) output)->add(String(key), data);
+  return false;
+}
+
+static bool
+cbson_loads_visit_bool (const bson_iter_t *iter,
+                        const char        *key,
+                        bool              v_bool,
+                        void              *output)
+{
+  ((Array *) output)->add(String(key), v_bool);
   return false;
 }
 
@@ -112,6 +99,15 @@ cbson_loads_visit_date_time (const bson_iter_t *iter,
   ((Array *) output)->add(String(key), data);
 
   return false;
+} 
+
+static bool
+cbson_loads_visit_null (const bson_iter_t *iter,
+                        const char        *key,                          
+                        void              *output)
+{
+  ((Array *) output)->add(String(key), Variant());
+  return false;
 }
 
 static bool
@@ -127,6 +123,16 @@ cbson_loads_visit_regex (const bson_iter_t *iter,
 
   ((Array *) output)->add(String(key), data); 
 
+  return false;
+}
+
+static bool
+cbson_loads_visit_int32 (const bson_iter_t *iter,
+                         const char         *key,
+                         int32_t           v_int32,
+                         void             *output)
+{
+  ((Array *) output)->add(String(key), v_int32);
   return false;
 }
 
@@ -147,42 +153,40 @@ cbson_loads_visit_timestamp (const bson_iter_t *iter,
 }
 
 static bool
-cbson_loads_visit_document (const bson_iter_t *iter,
-                            const char        *key,
-                            const bson_t      *v_document,
-                            void              *data);
-
-static bool
-cbson_loads_visit_array (const bson_iter_t *iter,
-                         const char        *key,
-                         const bson_t      *v_array,
-                         void              *data);
+cbson_loads_visit_int64 (const bson_iter_t *iter,
+                         const char*        key,
+                         int64_t          v_int64,
+                         void              *output)
+{
+  ((Array *) output)->add(String(key),v_int64);  
+  return false;
+}
 
 static const 
 bson_visitor_t gLoadsVisitors = {
-  NULL, // visit before
-  NULL, // visit after
-  NULL, // visit corrupt
+  NULL, //TODO: visit before
+  NULL, //TODO: visit after
+  NULL, //TODO: visit corrupt
   cbson_loads_visit_double,
   cbson_loads_visit_utf8,
   cbson_loads_visit_document,
   cbson_loads_visit_array,
-  NULL, // visit binary
-  NULL, // visit undefined
+  NULL, //TODO: visit binary
+  NULL, //TODO: visit undefined
   cbson_loads_visit_oid,
   cbson_loads_visit_bool,
   cbson_loads_visit_date_time,  
   cbson_loads_visit_null,
   cbson_loads_visit_regex,
-  NULL, // visit dbpointer
-  NULL, // visit code
-  NULL, // visit symbol
-  NULL, // visit code with scope
+  NULL, //TODO: visit dbpointer
+  NULL, //TODO: visit code
+  NULL, //TODO: visit symbol
+  NULL, //TODO: visit code with scope
   cbson_loads_visit_int32,  
   cbson_loads_visit_timestamp,
   cbson_loads_visit_int64,
-  NULL, // visit maxkey
-  NULL, // visit minkey
+  NULL, //TODO: visit maxkey
+  NULL, //TODO: visit minkey
 };
 
 static bool
@@ -252,7 +256,7 @@ cbson_loads (const bson_t * bson)
 
   return ret;
 }
-// Adapted from HNI
+
 
 
 Array

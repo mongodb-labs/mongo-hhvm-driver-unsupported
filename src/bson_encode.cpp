@@ -1,7 +1,7 @@
 #include "hphp/runtime/base/base-includes.h"
 #include <bson.h>
 #include "bson_encode.h"
-#include "bson_static_string_classes.h"
+#include "mongo_classes.h"
 
 namespace HPHP {
 void fillBSONWithArray(const Array& value, bson_t* bson) {
