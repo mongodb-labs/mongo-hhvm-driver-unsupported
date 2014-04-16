@@ -1,5 +1,5 @@
 #include "bson_decode.h"
-#include "bson_encode.h"
+#include "contrib/bson_encode.h"
 
 namespace HPHP {
 
