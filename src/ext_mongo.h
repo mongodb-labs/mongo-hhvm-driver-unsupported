@@ -2,7 +2,7 @@
 #define incl_HPHP_EXT_MONGO_H_
 
 #include "mongo_common.h"
-#include "bson_decode.h"
+//#include "bson_decode.h"
 namespace HPHP {
 
 static void mongoc_log_handler(mongoc_log_level_t log_level,

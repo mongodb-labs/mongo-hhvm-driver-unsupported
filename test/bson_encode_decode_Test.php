@@ -4,6 +4,17 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 
 	public function testDecoding() {
 		printf("Starting %s\n", __FUNCTION__);
+
+		echo "\nAssering that two simple arrays are equal";
+		$bson  = pack('C', 0x02);                      // byte: string type
+		$bson .= pack('a*x', 'x');                     // cstring: field name
+		$bson .= pack('V', 2);                         // int32: string length (valid)
+		$bson .= pack('a*x', 'a');                      // cstring: string value
+		$bson .= pack('x');                            // null byte: document terminator
+		$bson  = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
+
+		$this->assertEquals(Encoding::bson_decode($bson), array("x" => "a"));
+		
 		echo "\nTesting string type with valid length prefix\n";
 		$bson  = pack('C', 0x02);                      // byte: string type
 		$bson .= pack('a*x', 'x');                     // cstring: field name
@@ -11,8 +22,9 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson .= pack('a*x', '');                      // cstring: string value
 		$bson .= pack('x');                            // null byte: document terminator
 		$bson  = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
-
-		//$this->assertTrue(bson_decode($bson) == array(["x"] => ""));
+		var_dump(Encoding::bson_decode($bson));
+		//assert(Encoding::bson_decode($bson) == var_dump(array(["x"] => "")));
+		$this->assertEquals(Encoding::bson_decode($bson), array("x" => ""));
 
 		echo "\nTesting string type\n";
 		$bson = pack('C', 0x02); // byte: string type
@@ -21,7 +33,7 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson .= pack('a*x', ''); // cstring: string value
 		$bson .= pack('x'); // null byte: document terminator
 		$bson = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
-		//var_dump(bson_decode($bson));
+		//var_dump(Encoding::bson_decode($bson));
 
 		printf("Ending %s\n", __FUNCTION__);
 	}
