@@ -19,7 +19,7 @@ namespace HPHP {
 
   void mongoExtension::_initBSON() {
     HHVM_STATIC_ME(Encoding, bson_decode);
-    HHVM_FE(Encoding, bson_encode);
+    HHVM_STATIC_METHOD(Encoding, bson_encode);
   }
 
 }
