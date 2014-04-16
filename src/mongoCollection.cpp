@@ -39,7 +39,19 @@ static Array HHVM_METHOD(MongoCollection, distinct, const String& key, Array que
 
 //public function drop(): array;
 static Array HHVM_METHOD(MongoCollection, drop) {
-  throw NotImplementedException("Not Implemented");
+  mongoc_collection_t *collection;
+  bson_error_t error;
+
+  collection = get_collection(this_);
+
+  bool result = mongoc_collection_drop(collection, &error);
+
+  auto ret = Array::Create("return", result);
+  return ret;
+  /*
+  mongoc_collection_drop (mongoc_collection_t           *collection,
+                          bson_error_t                  *error);
+  */
 }
 
 //public function ensureIndex(mixed $key, array $options = array()): bool;
@@ -131,7 +143,7 @@ static Variant HHVM_METHOD(MongoCollection, remove, Array criteria, Array option
   bson_error_t error;
 
   collection = get_collection(this_);
-  
+
   bson_init(&criteria_b);
   //Supporting only "name" key
   bson_append_utf8(&criteria_b, "name", 4, criteria[String("name")].toString().c_str(), criteria[String("name")].toString().length());

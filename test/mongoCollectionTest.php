@@ -10,7 +10,7 @@ class MongoCollectionTest extends MongoTestCase {
 		$coll_name = "students";
 		$coll = new MongoCollection($db, $coll_name);
 
-		//TODO: add test case for insert
+		//Test case for insert and remove
 		$new_doc = array("_id"=>"123456781234567812345678", "name" => "Dan"); //24-digit _id required
 		$this->assertEquals(true, $coll->insert($new_doc));
 		$cursor = $coll->find(array("name" => "Dan"));
@@ -25,5 +25,10 @@ class MongoCollectionTest extends MongoTestCase {
 		}
 		$this->assertEquals(true, $coll->remove(array("name"=>"Dan")));
 		printf("Ended testMongoCollection\n\n");
+
+		//Test case for drop
+		$temp_coll = new MongoCollection($db, "temp");
+
+		$this->assertEquals(true, $temp_coll->drop()["return"]);
 	}
 }
