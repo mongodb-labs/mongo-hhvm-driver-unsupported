@@ -4,7 +4,7 @@
 namespace HPHP {
 
   // Global function for decoding bson
-  static Array HHVM_FUNCTION(bson_decode, const String& bson) {
+  static Array HHVM_STATIC_METHOD(Encoding, bson_decode, const String& bson) {
     return cbson_loads_from_string(bson);
   }
 
@@ -18,7 +18,7 @@ namespace HPHP {
   }*/
 
   void mongoExtension::_initBSON() {
-    HHVM_FE(bson_decode);
+    HHVM_STATIC_ME(Encoding, bson_decode);
     //HHVM_FE(bson_encode);
   }
 

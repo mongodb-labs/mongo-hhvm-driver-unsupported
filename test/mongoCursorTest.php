@@ -10,6 +10,7 @@ class MongoCursorTest extends MongoTestCase {
 									$database_name, 
 									array("name" => "Bob"),
                                   	array()	);
+		//var_dump($cursor->current());
 		//var_dump($cursor->info());
 		//$this->assertEquals(true, $cursor);
 		//var_dump($cursor->batchSize(5));

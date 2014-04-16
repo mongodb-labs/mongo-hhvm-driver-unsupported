@@ -1,5 +1,5 @@
 #include <bson.h>
-#include "mongo_classes.h"
+#include "./contrib/classes.h"
 #include "hphp/runtime/base/base-includes.h"
 #include "bson_decode.h"
 
@@ -239,7 +239,7 @@ cbson_loads_visit_array (const bson_iter_t *iter,
   return false;
 }
 
-static Array
+Array
 cbson_loads (const bson_t * bson) 
 {
   bson_iter_t iter;
