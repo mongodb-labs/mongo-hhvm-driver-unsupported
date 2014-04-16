@@ -14,15 +14,8 @@ class MongoBinData
     const MD5 = 5;
     const CUSTOM = 128;
 
-	/**
-	* @var string
-	*/
     public $bin;
-
-	/**
-	* @var int
-	*/
-	public $type;
+    public $type;
 
 	/**
 	* Creates a new binary data object.
@@ -48,4 +41,4 @@ class MongoBinData
 	{
 	    return "<Mongo Binary Data>";
 	}
-	}
+}

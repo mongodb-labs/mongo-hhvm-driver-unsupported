@@ -35,13 +35,4 @@ class MongoCursorTest extends MongoTestCase {
 		printf("Ending %s\n\n", __FUNCTION__);
 	}
 
-	/*public function testCurrent() {
-		printf("Starting %s\n", __FUNCTION__);
-		$cli = new MongoClient();
-		$db = "test.test_collection";
-		$cursor = new MongoCursor($cli, $db);
-		$output = shell_exec("mongo test js/testCursor.js");
-		printf($output);
-		printf("Ending %s\n\n", __FUNCTION__);
-	}*/
 }

@@ -5,14 +5,7 @@
 */
 class MongoCode
 {
-	/**
-	* @var string
-	*/
     private $code;
-
-	/**
-	* @var array
-	*/
     private $scope;
 
 	/**
@@ -23,9 +16,9 @@ class MongoCode
 	*
 	* @return - Returns a new code object.
 	*/
-    public function __construct($code, array $scope = [])
+    public function __construct(string $code, array $scope = array())
     {
-        $this->code = (string) $code;
+        $this->code = $code;
         $this->scope = $scope;
     }
 

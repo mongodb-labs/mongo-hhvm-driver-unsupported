@@ -18,10 +18,6 @@ abstract class MongoTestCase extends PHPUnit_Framework_TestCase {
 		parent::tearDown();
 	}
 
-	public function getSomething() {
-		return "Hello world";
-	}
-
 	public function getTestClient() {
 		if(!$this->testClient) {
 			$this->testClient = new MongoClient();
@@ -30,7 +26,7 @@ abstract class MongoTestCase extends PHPUnit_Framework_TestCase {
 		return $this->testClient;
 	}
 
-	/*public function getTestDB() {
+	public function getTestDB() {
 		return $this->getTestClient()->selectDB(self::TEST_DB);
-	}*/
+	}
 }

@@ -1,5 +1,6 @@
 <?hh
 
+//Adapted from MongoFill
 /**
  * A unique identifier created for database objects. If an object is inserted
  * into the database without an _id field, an _id field will be added to it
@@ -21,34 +22,12 @@
  */
 class MongoId
 {
-	/**
-	* @var string
-	*/
+	
 	private $id;
-
-	/**
-	* @var int
-	*/
 	private $timestamp;
-
-	/**
-	* @var string
-	*/
 	private $hostname;
-
-	/**
-	* @var int
-	*/
 	private $pid;
-
-	/**
-	* @var int
-	*/
 	private $inc;
-
-	/**
-	* @var int
-	*/
 	static private $refInc = null;
 
 	/**
@@ -64,7 +43,7 @@ class MongoId
 	public function __construct($id = null)
 	{
 		$this->hostname = self::getHostname();
-		if (null === $id) {
+		if ($id === null) {
 			$id = $this->generateId();
 		} else if (self::isValid($id)) {
 			$this->disassembleId($id);

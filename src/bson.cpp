@@ -1,6 +1,6 @@
 #include "bson_decode.h"
-#include "contrib/bson_encode.h"
-
+#include "contrib/encode.h"
+#include "ext_mongo.h"
 namespace HPHP {
 
   // Global function for decoding bson
@@ -8,12 +8,18 @@ namespace HPHP {
     return cbson_loads_from_string(bson);
   }
 
-  static String HHVM_FUNCTION(bson_encode, const Variant& anything) {
+  /*static String HHVM_FUNCTION(bson_encode, const Variant& anything) {
     bson_t bson;
     bson_init(&bson);
     fillBSONWithArray(anything.toArray(), &bson);
 
     const char* output = (const char*) bson_get_data(&bson);        
     return String(output, bson.len, CopyString);
+  }*/
+
+  void mongoExtension::_initBSON() {
+    HHVM_FE(bson_decode);
+    //HHVM_FE(bson_encode);
   }
+
 }
