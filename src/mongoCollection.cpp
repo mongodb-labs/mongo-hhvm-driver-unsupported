@@ -66,7 +66,28 @@ static bool HHVM_METHOD(MongoCollection, ensureIndex, Variant key, Array options
                                 array $options): array;
 */
 static Array HHVM_METHOD(MongoCollection, findAndModify, Array query, Array update, Array fields, Array options) {
-  throw NotImplementedException("Not Implemented");
+  mongoc_collection_t *collection; 
+  bson_t query = BSON_INITIALIZER;
+  bson_t *update;
+  bson_t *fields;
+  bson_t reply;
+  bson_error_t error; 
+
+  collection = get_collection(this_); 
+
+  //TODO: 
+  //set query, update and fields
+
+  bool ret = mongoc_collection_find_and_modify(collection, &query, NULL, update, fields, false, false, true, &reply, &error); 
+  
+
+  bson_destroy (&reply);
+  bson_destroy (update);
+  bson_destroy(fields);
+  bson_destroy(&query);
+
+  return ret; 
+
 }
 
 //public function getDBRef(array $ref): array;
@@ -196,8 +217,12 @@ mongoc_collection_save (mongoc_collection_t          *collection,
 }
 
 //static protected function toIndexString(mixed $keys): string;
-static String HHVM_STATIC_METHOD(MongoCollection, toIndexString, Variant keys) {
-  throw NotImplementedException("Not Implemented");
+static String HHVM_STATIC_METHOD(MongoCollection, toIndexString, Variant keys)
+
+/*
+char *
+mongoc_collection_keys_to_index_string (const bson_t *keys)
+*/
 }
 
 /*
@@ -205,8 +230,45 @@ public function update(array $criteria,
                          array $new_object,
                          array $options = array()): mixed;
 */
-static Variant HHVM_METHOD(MongoCollection, update, Array criteria, Array new_object, Array options) { //TODO
-  throw NotImplementedException("Not Implemented");
+static Variant HHVM_METHOD(MongoCollection, update, Array criteria, Array new_object, Array options) { 
+  mongoc_collection_t *collection; 
+  bson_t selector; //selector is the criteria (which document to update)
+  bson_t update;  //update is the new_object containing the new data 
+  bson_oid_t oid;
+  bson_error_t error;
+
+  collection = get_collection(this_); 
+
+  //Read oid and name from criteria array 
+  bson_init(&selector); 
+  bson_oid_init_from_string(&oid, criteria[String("_id")].toString().c_str()); 
+  bson_append_oid(&selector, "_id", 3, &oid); 
+  bson_append_utf8(&selector, "name", 4, criteria[String("name")].toString().c_str(), criteria[String("name")].toString().length()); 
+
+  //Convert new_object to bson 
+  //Hard coded test for now 
+  bson_init(&update); 
+  BSON_APPEND_INT32 (&u, "abcd", 1);
+  BSON_APPEND_INT32 (&u, "$hi", 1);
+
+  bool ret = mongoc_collection_update(collection, MONGOC_UPDATE_NONE, &selector, &update, NULL, &error);
+
+  mongoc_collection_destroy (collection);
+
+  bson_destroy(&update);
+  bson_destroy(&selector); 
+
+  return ret; 
+
+/*
+bool
+mongoc_collection_update (mongoc_collection_t          *collection,
+                          mongoc_update_flags_t         flags,
+                          const bson_t                 *selector,
+                          const bson_t                 *update,
+                          const mongoc_write_concern_t *write_concern,
+                          bson_error_t                 *error)
+*/
 }
 
 //public function validate(bool $scan_data = false): array;
