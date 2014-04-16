@@ -239,7 +239,7 @@ cbson_loads_visit_array (const bson_iter_t *iter,
   return false;
 }
 
-static Array
+Array
 cbson_loads (const bson_t * bson) 
 {
   bson_iter_t iter;
