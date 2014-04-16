@@ -165,7 +165,34 @@ static Variant HHVM_METHOD(MongoCollection, remove, Array criteria, Array option
 
 //public function save(mixed $a, array $options = array()): mixed;
 static Variant HHVM_METHOD(MongoCollection, save, Variant a, Array options) {
-  throw NotImplementedException("Not Implemented");
+  mongoc_collection_t *collection;
+  bson_t doc;
+  bson_error_t error;
+  bson_oid_t oid;
+
+  collection = get_collection(this_);
+
+  Array doc_array = a.toArray();
+  bson_init(&doc);
+  bson_oid_init_from_string(&oid, doc_array[String("_id")].toString().c_str());
+  bson_append_oid(&doc, "_id", 3, &oid);
+  //Supporting only "name" key
+  bson_append_utf8(&doc, "name", 4, doc_array[String("name")].toString().c_str(), doc_array[String("name")].toString().length());
+
+  bool ret = mongoc_collection_save(collection, &doc, NULL, &error);
+
+  mongoc_collection_destroy (collection);
+  bson_destroy(&doc);
+
+  return ret;
+
+  /*
+  bool
+mongoc_collection_save (mongoc_collection_t          *collection,
+                        const bson_t                 *document,
+                        const mongoc_write_concern_t *write_concern,
+                        bson_error_t                 *error)
+  */
 }
 
 //static protected function toIndexString(mixed $keys): string;
