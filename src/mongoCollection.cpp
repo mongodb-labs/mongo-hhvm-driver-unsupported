@@ -66,10 +66,10 @@ static bool HHVM_METHOD(MongoCollection, ensureIndex, Variant key, Array options
                                 array $options): array;
 */
 static Array HHVM_METHOD(MongoCollection, findAndModify, Array query, Array update, Array fields, Array options) {
+  
   mongoc_collection_t *collection; 
-  bson_t query = BSON_INITIALIZER;
-  bson_t *update;
-  bson_t *fields;
+  bson_t query_b = BSON_INITIALIZER;
+  //bson_t *update_b;
   bson_t reply;
   bson_error_t error; 
 
@@ -78,15 +78,28 @@ static Array HHVM_METHOD(MongoCollection, findAndModify, Array query, Array upda
   //TODO: 
   //set query, update and fields
 
-  bool ret = mongoc_collection_find_and_modify(collection, &query, NULL, update, fields, false, false, true, &reply, &error); 
+  bool result = mongoc_collection_find_and_modify(collection, &query_b, NULL, NULL, NULL, false, false, true, &reply, &error); 
   
+  /*
+  bool
+mongoc_collection_find_and_modify (mongoc_collection_t *collection,
+                                   const bson_t        *query,
+                                   const bson_t        *sort,
+                                   const bson_t        *update,
+                                   const bson_t        *fields,
+                                   bool                 _remove,
+                                   bool                 upsert,
+                                   bool                 _new,
+                                   bson_t              *reply,
+                                   bson_error_t        *error)
+                                   */
 
   bson_destroy (&reply);
-  bson_destroy (update);
-  bson_destroy(fields);
-  bson_destroy(&query);
+  //bson_destroy (update_b);
+  bson_destroy(&query_b);
 
-  return ret; 
+  auto ret = Array::Create("return", result);
+  return ret;
 
 }
 
@@ -217,8 +230,8 @@ mongoc_collection_save (mongoc_collection_t          *collection,
 }
 
 //static protected function toIndexString(mixed $keys): string;
-static String HHVM_STATIC_METHOD(MongoCollection, toIndexString, Variant keys)
-
+static String HHVM_STATIC_METHOD(MongoCollection, toIndexString, Variant keys) {
+  throw NotImplementedException("Not Implemented");
 /*
 char *
 mongoc_collection_keys_to_index_string (const bson_t *keys)
@@ -248,8 +261,8 @@ static Variant HHVM_METHOD(MongoCollection, update, Array criteria, Array new_ob
   //Convert new_object to bson 
   //Hard coded test for now 
   bson_init(&update); 
-  BSON_APPEND_INT32 (&u, "abcd", 1);
-  BSON_APPEND_INT32 (&u, "$hi", 1);
+  BSON_APPEND_INT32 (&update, "abcd", 1);
+  BSON_APPEND_INT32 (&update, "$hi", 1);
 
   bool ret = mongoc_collection_update(collection, MONGOC_UPDATE_NONE, &selector, &update, NULL, &error);
 
