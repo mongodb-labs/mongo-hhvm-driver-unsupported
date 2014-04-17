@@ -8,13 +8,24 @@ namespace HPHP {
     return cbson_loads_from_string(bson);
   }
 
-  static String HHVM_STATIC_METHOD(Encoding, bson_encode, const Variant& mixture) {
+  static String encode(const Variant& mixture) {
     bson_t bson;
     bson_init(&bson);
     fillBSONWithArray(mixture.toArray(), &bson);
 
     const char* output = (const char*) bson_get_data(&bson);        
     return String(output, bson.len, CopyString);
+  }
+
+  static String HHVM_STATIC_METHOD(Encoding, bson_encode, const Array& mixture) {
+    String serialize;
+    for (ArrayIter iter(mixture); iter; ++iter) {
+      serialize = encode(iter.secondRef());
+      printf("mixture IS an array!!!!!!!!!!!!!!!!!!!!!!!!!!! serialize becomes:");
+      //printf(iter.secondRef());
+      printf("\n");
+    }
+    return serialize;
   }
 
   void mongoExtension::_initBSON() {
