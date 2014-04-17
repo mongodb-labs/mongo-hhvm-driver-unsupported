@@ -8,10 +8,10 @@ namespace HPHP {
     return cbson_loads_from_string(bson);
   }
 
-  static String HHVM_FUNCTION(Encoding, bson_encode, const Variant& mixture) {
+  static String HHVM_STATIC_METHOD(Encoding, bson_encode, const Variant& mixture) {
     bson_t bson;
     bson_init(&bson);
-    fillBSONWithArray(anything.toArray(), &bson);
+    fillBSONWithArray(mixture.toArray(), &bson);
 
     const char* output = (const char*) bson_get_data(&bson);        
     return String(output, bson.len, CopyString);
@@ -19,7 +19,7 @@ namespace HPHP {
 
   void mongoExtension::_initBSON() {
     HHVM_STATIC_ME(Encoding, bson_decode);
-    HHVM_STATIC_METHOD(Encoding, bson_encode);
+    HHVM_STATIC_ME(Encoding, bson_encode);
   }
 
 }
