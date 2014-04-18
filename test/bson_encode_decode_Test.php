@@ -3,9 +3,8 @@
 class DecodingTest extends PHPUnit_Framework_TestCase {
 
 	public function testDecoding() {
-		printf("Starting %s\n", __FUNCTION__);
 
-		echo "\nTesting string type with valid length prefix";
+		//echo "\nTesting string type with valid length prefix";
 		$bson  = pack('C', 0x02);                      // byte: string type
 		$bson .= pack('a*x', 'x');                     // cstring: field name
 		$bson .= pack('V', 2);                         // int32: string length (valid)
@@ -15,7 +14,7 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(array("x" => "a"), Encoding::bson_decode($bson));
 
-		echo "\nTesting oid\n";
+		//echo "\nTesting oid\n";
 		$bson  = pack('C', 0x07);                      // byte: oid type
 		$bson .= pack('a*x', 'id');                     // cstring: field name
 		$bson .= pack('H24', "507f191e810c19729de860ea");               // byte*12: oid value
@@ -25,7 +24,7 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$expected = array("id" => new MongoId("507f191e810c19729de860ea"));
 		$this->assertEquals($expected, Encoding::bson_decode($bson));
 
-		echo "\nTesting nested docs\n";
+		//echo "\nTesting nested docs\n";
 		$inner_doc = $bson;
 		$inner_expected = $expected;
 		$bson  = pack('C', 0x03);                      // byte: document type
@@ -50,7 +49,7 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($expected, Encoding::bson_decode($bson));*/
 
 
-		echo "\nTesting string type\n";
+		//echo "\nTesting string type\n";
 		$bson = pack('C', 0x02); // byte: string type
 		$bson .= pack('a*x', 'x'); // cstring: field name
 		$bson .= pack('V', 0); // int32: string length (invalid)
@@ -59,11 +58,9 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
 		//var_dump(Encoding::bson_decode($bson));
 
-		printf("Ending %s\n", __FUNCTION__);
 	}
 
 	public function testEncodeDecode() {
-		printf("Starting %s\n", __FUNCTION__);
 		$a1 = array("hello" => "world");
 		//$this->assertTrue(bson_decode(bson_encode($a1)) == $a1);
 
@@ -81,7 +78,5 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 
 		$a3 = array("nested" => $a1);
 		//$this->assertTrue(bson_decode(bson_encode($a3)) == $a3);
-
-		printf("Ending %s\n", __FUNCTION__);
 	}
 } 	
