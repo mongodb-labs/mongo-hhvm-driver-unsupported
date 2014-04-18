@@ -13,7 +13,6 @@ class MongoCollectionStub extends MongoCollection {
 class MongoCollectionTest extends MongoTestCase {
 
 	public function testMongoCollection() {
-		printf("Starting %s\n", __FUNCTION__);
 		$cli = $this->getTestClient();
 		$db = $this->getTestDB();
 		$coll_name = "students";
@@ -21,9 +20,12 @@ class MongoCollectionTest extends MongoTestCase {
 
 		// Testing toIndexString
 		$c = new MongoCollectionStub();
-		var_dump($c->createIndexString("foo"));
-		var_dump($c->createIndexString(array('name' => 1, 'age' => -1, 'bool' => false)));
+		$actual = $c->createIndexString("foo");
+		$expected = "foo_1";
+		$this->assertEquals($expected, $actual);
 
-		printf("Ending %s\n", __FUNCTION__);
+		$actual = $c->createIndexString(array('name' => 1, 'age' => -1, 'bool' => false));
+		$expected = "name_1_age_-1_bool_1";
+		$this->assertEquals($expected, $actual);
 	}
 }
