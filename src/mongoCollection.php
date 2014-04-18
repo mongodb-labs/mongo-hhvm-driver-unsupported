@@ -197,9 +197,10 @@ class MongoCollection {
    *
    * @return array - Returns an array of distinct values,
    */
-  <<__Native>>
   public function distinct(string $key,
-                           array $query): array;
+                           array $query): array {
+    return $this->db->command(array("distinct" => $this->name, "key" => $key, "query" => $query));
+  }
 
   /**
    * Drops this collection
@@ -207,7 +208,7 @@ class MongoCollection {
    * @return array - Returns the database response.
    */
   public function drop(): array {
-    return $this->command(array("drop" => $this->name));
+    return $this->db->command(array("drop" => $this->name));
   }
 
   /**
@@ -222,9 +223,45 @@ class MongoCollection {
    * @return bool - Returns an array containing the status of the index
    *   creation if the "w" option is set. Otherwise, returns TRUE.
    */
-  <<__Native>>
   public function ensureIndex(mixed $key,
-                              array $options = array()): bool;
+                              array $options = array()): bool {
+    $indexName = $this->toIndexString($key);
+    $client = $this->db->__getClient();
+
+    // check client server version, set newer to true if 2.6+
+    $version = $client->getServerVersion();
+    $newer = false;
+    if (intval($version[0]) > 2) {
+      $newer = true;
+    } else if (intval($version[0]) == 2) {
+      if (intval($version[2]) >= 6) {
+        $newer = true;
+      }
+    }
+
+    // indexOptions Object
+    $indexOptions = array("key" => $key,
+                          "name" => $indexName,
+                          "ns" => $this->name,
+                          "background" => $options["background"],
+                          "unique" => $options["unique"],
+                          "dropDups" => $options["dropDups"],
+                          "sparse" => $options["sparse"],
+                          "expireAfterSeconds" => $options["expireAfterSeconds"],
+                          "v" => $options["v"],
+                          "weights" => $options["weights"],
+                          "default_language" => $options["default_language"],
+                          "language_override" => $options["language_override"]);
+
+    // if server version >= 2.6, can run database command
+    if ($newer) {
+      $out = $this->db->command(array("createIndexes" => $this->name,
+                                      "indexes" => $indexOptions));
+    } else {
+      $out = $this->db->selectCollection("system.indexes")->insert($indexOptions, 0, true);
+    }
+    return $out;
+  }
 
   /** TODO
    * Queries this collection, returning a
@@ -256,11 +293,19 @@ class MongoCollection {
    * @return array - Returns the original document, or the modified
    *   document when new is set.
    */
-  <<__Native>>
   public function findAndModify(array $query,
                                 array $update,
                                 array $fields,
-                                array $options): array;
+                                array $options): array {
+    $out = $this->db->command(array("findAndModify" => $this->name,
+                                    "query" => $query,
+                                    "update" => $update,
+                                    "fields" => $fields,
+                                    "new" => $options["new"],
+                                    "upsert" => $options["upsert"],
+                                    "sort" => $options["sort"]));
+    return $out["value"];
+  }
 
    /**
    * Queries this collection, returning a single element
