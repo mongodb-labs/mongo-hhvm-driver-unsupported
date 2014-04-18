@@ -1,5 +1,5 @@
 #include <bson.h>
-#include "mongo_classes.h"
+#include "./contrib/classes.h"
 #include "hphp/runtime/base/base-includes.h"
 #include "bson_decode.h"
 
