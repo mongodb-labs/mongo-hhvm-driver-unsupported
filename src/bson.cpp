@@ -15,7 +15,8 @@ namespace HPHP {
     fillBSONWithArray(mixture.toArray(), &bson);
 
     const char* output = (const char*) bson_get_data(&bson);        
-    return String(output, bson.len, CopyString);
+    String s = String(output, bson.len, CopyString);
+    return s;
   }
 
   static String HHVM_STATIC_METHOD(Encoding, bson_encode, const Variant& mixture) {
