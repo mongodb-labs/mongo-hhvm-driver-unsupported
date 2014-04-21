@@ -1,6 +1,7 @@
 #include "bson_decode.h"
 #include "contrib/encode.h"
 #include "ext_mongo.h"
+#include <iostream>
 namespace HPHP {
 
   // Global function for decoding bson
@@ -17,15 +18,8 @@ namespace HPHP {
     return String(output, bson.len, CopyString);
   }
 
-  static String HHVM_STATIC_METHOD(Encoding, bson_encode, const Array& mixture) {
-    String serialize;
-    for (ArrayIter iter(mixture); iter; ++iter) {
-      serialize = encode(iter.secondRef());
-      printf("mixture IS an array!!!!!!!!!!!!!!!!!!!!!!!!!!! serialize becomes:");
-      //printf(iter.secondRef());
-      printf("\n");
-    }
-    return serialize;
+  static String HHVM_STATIC_METHOD(Encoding, bson_encode, const Variant& mixture) {
+    return encode(mixture);
   }
 
   void mongoExtension::_initBSON() {

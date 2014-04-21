@@ -65,23 +65,40 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 	public function testEncodeDecode() {
 		printf("Starting %s\n", __FUNCTION__);
 		$a1 = array("hello" => "world");
-    printf("start testing encoding-------------------------------------------------------------\n");
-    var_dump(Encoding::bson_decode(Encoding::bson_encode($a1)));
-    var_dump($a1);
-		//$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a1)) == $a1);
+		$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a1)) == $a1);
 
 		$id = new MongoId();
 		$a2 = array("_id" => $id);
-		//$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a2)) == $a2);
+    printf("start testing encoding-------------------------------------------------------------\n");
+    $en_result = Encoding::bson_encode($a2["_id"]);
+    var_dump($en_result);
+    $result = Encoding::bson_decode($en_result);
+    var_dump($result);
+    var_dump($a2["_id"]);
+    printf("finish testing encoding-------------------------------------------------------------\n");
+		//$this->assertTrue($result == $a2);
 
-		$int32 = new MongoInt32("32");
+		$int32 = 2;
 		$a2["a_int32"] = $int32;
-		//$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a2)) == $a2);
+    $result = Encoding::bson_decode(Encoding::bson_encode($a2["a_int32"]));
+		$this->assertTrue($result[0] == $a2["a_int32"]);
 
 		$int64 = new MongoInt64("64");
 		$a2["a_int64"] = $int64;
     //var_dump(Encoding::bson_decode(Encoding::bson_encode($a2["a_int32"])));
 		//$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a2["a_int64"])) == $a2["a_int64"]);
+
+    $bool = true;
+    $a2["boolean"] = $bool;
+		$this->assertTrue((Encoding::bson_decode(Encoding::bson_encode($a2["boolean"])))[0] == $a2["boolean"]);
+    
+    $null = null;
+    $a2["null"] = $null;
+		$this->assertTrue((Encoding::bson_decode(Encoding::bson_encode($a2["null"])))[0] == $a2["null"]);
+    
+    $double = 3.2;
+    $a2["double"] = $double;
+		$this->assertTrue((Encoding::bson_decode(Encoding::bson_encode($a2["double"])))[0] == $a2["double"]);    
 
 		$a3 = array("nested" => $a1);
 		$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a3)) == $a3);
