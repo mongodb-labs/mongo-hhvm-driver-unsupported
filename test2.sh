@@ -6,6 +6,5 @@ if [ ! -z "${REALPATH}" ]; then
   DIRNAME=`realpath ${DIRNAME}`
 fi
 
-${HPHP_HOME}/hphp/hhvm/hhvm \
-  -vDynamicExtensions.0=${DIRNAME}/mongo.so \
-  ${DIRNAME}/test/mongocursor-constructor.php
+${HPHP_HOME}/hphp/hhvm/hhvm -a \
+  -vDynamicExtensions.0=${DIRNAME}/mongo.so

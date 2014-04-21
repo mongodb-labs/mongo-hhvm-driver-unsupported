@@ -14,10 +14,9 @@ class MongoCursorTest extends MongoTestCase {
 		    //$key = $cursor->key();   //This should be tested after BSON-PHP decoder is finished
 		    //var_dump($key);
 		    $value = $cursor->current();
-		    var_dump($value);
+		    //var_dump($value);
 		    $cursor->next();
 		}
-		
 	}
 
 	public function testStartedIterating() {
