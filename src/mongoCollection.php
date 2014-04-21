@@ -20,6 +20,61 @@ class MongoCollection {
   private $slaveOkay = false;
   private $read_preference = [];
 
+
+/**
+   * Inserts a document into the collection
+   *
+   * @param array|object $a - a    An array or object. If an object is
+   *   used, it may not have protected or private properties.    If the
+   *   parameter does not have an _id key or property, a new MongoId
+   *   instance will be created and assigned to it.
+   * @param array $options - options    Options for the insert.
+   *
+   * @return bool|array - Returns an array containing the status of the
+   *   insertion if the "w" option is set. Otherwise, returns TRUE if the
+   *   inserted array is not empty (a MongoException will be thrown if the
+   *   inserted array is empty). 
+   */
+  <<__Native>>
+  public function insert(mixed $a,
+                         array $options = array()): mixed;
+
+  /**
+   * Remove records from this collection
+   *
+   * @param array $criteria - criteria    Description of records to
+   *   remove.
+   * @param array $options - options    Options for remove.    "justOne"
+   *    Remove at most one record matching this criteria.
+   *
+   * @return bool|array - Returns an array containing the status of the
+   *   removal if the "w" option is set. Otherwise, returns TRUE.
+   */
+  <<__Native>>
+  public function remove(array $criteria = array(),
+                         array $options = array()): mixed;
+
+    /**
+   * Update records based on a given criteria
+   *
+   * @param array $criteria - criteria    Description of the objects to
+   *   update.
+   * @param array $new_object - new_object    The object with which to
+   *   update the matching records.
+   * @param array $options - options   
+   *
+   * @return bool|array - Returns an array containing the status of the
+   *   update if the "w" option is set. Otherwise, returns TRUE.
+   */
+  <<__Native>>
+  public function update(array $criteria,
+                         array $new_object,
+                         array $options = array()): mixed;
+
+
+  private function getFullName(): string {
+    return $this->db . $this->name;
+   }
   /**
    * Perform an aggregation using the aggregation framework
    *
@@ -102,8 +157,15 @@ class MongoCollection {
    *   without an _id field was provided as the document_or_id parameter,
    *   NULL will be returned.
    */
-  <<__Native>>
-  public function createDBRef(mixed $document_or_id): array;
+  public function createDBRef(string $collection, 
+                                mixed $document_or_id): array {
+        if (is_array($document_or_id)) {
+            $id = $document_or_id['_id'];
+        } else {
+            $id = $document_or_id;
+        }
+        return MongoDBRef::create($this->name, $id, $this->db->__getDBName());
+    }
 
   /**
    * Deletes an index from this collection
@@ -113,16 +175,19 @@ class MongoCollection {
    *
    * @return array - Returns the database response.
    */
-  <<__Native>>
-  public function deleteIndex(mixed $keys): array;
+  public function deleteIndex(mixed $keys): array {
+    $index = $this->toIndexString($keys);
+    return $this->db->command(array("deleteIndexes" => $this->getName(), "index" => $index));
+  }
 
   /**
    * Delete all indices for this collection
    *
    * @return array - Returns the database response.
    */
-  <<__Native>>
-  public function deleteIndexes(): array;
+  public function deleteIndexes(): array {
+    return $this->deleteIndex("*");
+  }
 
   /**
    * Retrieve a list of distinct values for the given key across a collection.
@@ -132,17 +197,19 @@ class MongoCollection {
    *
    * @return array - Returns an array of distinct values,
    */
-  <<__Native>>
   public function distinct(string $key,
-                           array $query): array;
+                           array $query): array {
+    return $this->db->command(array("distinct" => $this->name, "key" => $key, "query" => $query));
+  }
 
   /**
    * Drops this collection
    *
    * @return array - Returns the database response.
    */
-  <<__Native>>
-  public function drop(): array;
+  public function drop(): array {
+    return $this->db->command(array("drop" => $this->name));
+  }
 
   /**
    * Creates an index on the given field(s), or does nothing if the index
@@ -156,9 +223,45 @@ class MongoCollection {
    * @return bool - Returns an array containing the status of the index
    *   creation if the "w" option is set. Otherwise, returns TRUE.
    */
-  <<__Native>>
   public function ensureIndex(mixed $key,
-                              array $options = array()): bool;
+                              array $options = array()): bool {
+    $indexName = $this->toIndexString($key);
+    $client = $this->db->__getClient();
+
+    // check client server version, set newer to true if 2.6+
+    $version = $client->getServerVersion();
+    $newer = false;
+    if (intval($version[0]) > 2) {
+      $newer = true;
+    } else if (intval($version[0]) == 2) {
+      if (intval($version[2]) >= 6) {
+        $newer = true;
+      }
+    }
+
+    // indexOptions Object
+    $indexOptions = array("key" => $key,
+                          "name" => $indexName,
+                          "ns" => $this->name,
+                          "background" => $options["background"],
+                          "unique" => $options["unique"],
+                          "dropDups" => $options["dropDups"],
+                          "sparse" => $options["sparse"],
+                          "expireAfterSeconds" => $options["expireAfterSeconds"],
+                          "v" => $options["v"],
+                          "weights" => $options["weights"],
+                          "default_language" => $options["default_language"],
+                          "language_override" => $options["language_override"]);
+
+    // if server version >= 2.6, can run database command
+    if ($newer) {
+      $out = $this->db->command(array("createIndexes" => $this->name,
+                                      "indexes" => $indexOptions));
+    } else {
+      $out = $this->db->selectCollection("system.indexes")->insert($indexOptions, 0, true);
+    }
+    return $out;
+  }
 
   /** TODO
    * Queries this collection, returning a
@@ -174,7 +277,7 @@ class MongoCollection {
    */
   public function find(array $query = array(),
                        array $fields = array()): MongoCursor {
-    $ns = $this->db . "." . $this->name;
+    $ns = $this->getFullName();
 
     return new MongoCursor($this->db->__getClient(), $ns, $query, $fields);
   }
@@ -190,11 +293,19 @@ class MongoCollection {
    * @return array - Returns the original document, or the modified
    *   document when new is set.
    */
-  <<__Native>>
   public function findAndModify(array $query,
                                 array $update,
                                 array $fields,
-                                array $options): array;
+                                array $options): array {
+    $out = $this->db->command(array("findAndModify" => $this->name,
+                                    "query" => $query,
+                                    "update" => $update,
+                                    "fields" => $fields,
+                                    "new" => $options["new"],
+                                    "upsert" => $options["upsert"],
+                                    "sort" => $options["sort"]));
+    return $out["value"];
+  }
 
    /**
    * Queries this collection, returning a single element
@@ -208,7 +319,17 @@ class MongoCollection {
    */
   public function findOne(array $query = array(),
                           array $fields = array()): array {
-    return [];
+    $cursor = $this->find($query, $fields);
+    $cursor = $cursor->limit(-1);
+    if (!$cursor->hasNext()) {
+      return null;
+    }
+    $cursor->next();
+    $ret = $cursor->current();
+    if ($cursor->hasNext()) {
+      throw new MongoCursorException("findOne has more than 1 result!");
+    }
+    return $ret;
   }
 
   /** TODO
@@ -230,8 +351,9 @@ class MongoCollection {
    * @return array - Returns the database document pointed to by the
    *   reference.
    */
-  <<__Native>>
-  public function getDBRef(array $ref): array;
+  public function getDBRef(array $ref): array {
+    return MongoDBRef::get($this->db, $ref);
+  }
 
   /**
    * Returns information about indexes on this collection
@@ -242,15 +364,16 @@ class MongoCollection {
    *   database and collection name), and key for a list of all fields in
    *   the index and their ordering.
    */
-  <<__Native>>
-  public function getIndexInfo(): array;
+  public function getIndexInfo(): array {
+    return $this->db->selectCollection("system.indexes")->findOne(array("ns" => $this->getFullName()));
+  }
 
   /**
    * Returns this collections name
    *
    * @return string - Returns the name of this collection.
    */
-  public function getName(): string{
+  public function getName(): string {
     return $this->name;
   }
 
@@ -293,38 +416,7 @@ class MongoCollection {
   //                       MongoCode $reduce,
   //                       array $options = array()): array;
 
-  /**
-   * Inserts a document into the collection
-   *
-   * @param array|object $a - a    An array or object. If an object is
-   *   used, it may not have protected or private properties.    If the
-   *   parameter does not have an _id key or property, a new MongoId
-   *   instance will be created and assigned to it.
-   * @param array $options - options    Options for the insert.
-   *
-   * @return bool|array - Returns an array containing the status of the
-   *   insertion if the "w" option is set. Otherwise, returns TRUE if the
-   *   inserted array is not empty (a MongoException will be thrown if the
-   *   inserted array is empty). 
-   */
-  <<__Native>>
-  public function insert(mixed $a,
-                         array $options = array()): mixed;
-
-  /**
-   * Remove records from this collection
-   *
-   * @param array $criteria - criteria    Description of records to
-   *   remove.
-   * @param array $options - options    Options for remove.    "justOne"
-   *    Remove at most one record matching this criteria.
-   *
-   * @return bool|array - Returns an array containing the status of the
-   *   removal if the "w" option is set. Otherwise, returns TRUE.
-   */
-  <<__Native>>
-  public function remove(array $criteria = array(),
-                         array $options = array()): mixed;
+  
 
    /**
    * Saves a document to this collection
@@ -339,9 +431,17 @@ class MongoCollection {
    *   of the save. Otherwise, returns a boolean representing if the array
    *   was not empty (an empty array will not be inserted).
    */
-  <<__Native>>
   public function save(mixed $a,
-                       array $options = array()): mixed;
+                       array $options = array()): mixed {
+    if (is_array($a)) {
+      if (!isset($a["_id"])) {
+        $a["_id"] = new MongoId();
+        return $this->insert($a);
+      }
+      return $this->update(array("_id" => $a["_id"]), $a);
+    }
+    throw new Exception("Saving objects not implemented");
+  }
 
   /**
    * Set the read preference for this collection
@@ -374,7 +474,8 @@ class MongoCollection {
     return $former;
   }
 
-  /**
+  /**DEPRECATED 
+   * TODO: Enforce only scalar value types
    * Converts keys specifying an index to its identifying string
    *
    * @param mixed $keys - keys    Field or fields to convert to the
@@ -382,8 +483,29 @@ class MongoCollection {
    *
    * @return string - Returns a string that describes the index.
    */
-  <<__Native>>
-  static protected function toIndexString(mixed $keys): string;
+  static protected function toIndexString(mixed $keys): string {
+    $str = "";
+    
+    if (gettype($keys) == "array") {
+
+      foreach ($keys as $key => $val) {        
+        // order must be ascending (1) for boolean field
+        if (gettype($val) == "boolean")
+          $val = 1;
+
+        if ($key === key($keys)) {
+          $str .= $key . "_" . $val;
+        }
+        else {
+          $str .= "_" . $key . "_" . $val;
+        }
+      }
+    } else {
+      // if $keys is just a string, append _1 as value
+      $str .= $keys . "_1";
+    }
+    return $str;
+  }
 
   /**
    * String representation of this collection
@@ -395,23 +517,6 @@ class MongoCollection {
   }
 
   /**
-   * Update records based on a given criteria
-   *
-   * @param array $criteria - criteria    Description of the objects to
-   *   update.
-   * @param array $new_object - new_object    The object with which to
-   *   update the matching records.
-   * @param array $options - options   
-   *
-   * @return bool|array - Returns an array containing the status of the
-   *   update if the "w" option is set. Otherwise, returns TRUE.
-   */
-  <<__Native>>
-  public function update(array $criteria,
-                         array $new_object,
-                         array $options = array()): mixed;
-
-  /**
    * Validates this collection
    *
    * @param bool $scan_data - scan_data    Only validate indices, not the
@@ -419,6 +524,12 @@ class MongoCollection {
    *
    * @return array - Returns the databases evaluation of this object.
    */
-  <<__Native>>
-  public function validate(bool $scan_data = false): array;
+  public function validate(bool $scan_data = false): array {
+    $cmd = array("validate" => $this->name);
+    if ($scan_data) {
+      $cmd["full"] = true;
+    }
+
+    return $this->db->command($cmd);
+  }
 }

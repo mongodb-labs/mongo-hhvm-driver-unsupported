@@ -6,19 +6,8 @@
 */
 class MongoTimestamp
 {
-	/**
-	* @var int
-	*/
     private static $globalInc = 0;
-
-	/**
-	* @var int
-	*/
 	public $sec;
-
-	/**
-	* @var int
-	*/
 	public $inc;
 
 	/**
@@ -30,7 +19,7 @@ class MongoTimestamp
 	* @return - Returns this new timestamp.
 	*/
     public function __construct($sec = -1, $inc = -1) {
-        $this->sec = $sec < 0 ? time() : (int)$sec;
+        $this->sec = $sec < 0 ? time() : (int) $sec;
         if ($inc < 0) {
             $this->inc = self::$globalInc;
             self::$globalInc++;

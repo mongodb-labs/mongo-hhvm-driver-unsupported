@@ -3,9 +3,8 @@
 class MongoClientTest extends MongoTestCase {
 
 	public function testMongoClient() {
-		printf("Running testMongoClient\n");
 		$cli = $this->getTestClient();
-		var_dump((string) $cli);
-		printf("Ended testMongoClient\n\n");
+		//var_dump((string) $cli);
+		//var_dump($cli->listDBs());
 	}
 } 	
