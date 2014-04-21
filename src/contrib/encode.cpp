@@ -136,7 +136,7 @@ void mongoRegexToBSON(const Object& value, const char* key, bson_t* bson) {
 
 void mongoIdToBSON(const Object& value, const char* key, bson_t* bson) {
     bson_oid_t oid;
-    bson_oid_init_from_string(&oid, value->o_get("$id").toString().c_str());
+    bson_oid_init_from_string(&oid, value->o_get("id").toString().c_str());
     bson_append_oid(bson, key, -1, &oid);
 }
 
