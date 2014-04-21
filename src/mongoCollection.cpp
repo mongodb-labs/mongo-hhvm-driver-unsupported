@@ -17,102 +17,6 @@ static mongoc_collection_t *get_collection(Object obj) {
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoCollection
 
-//public function createDBRef(mixed $document_or_id): array;
-static Array HHVM_METHOD(MongoCollection, createDBRef, Variant document_or_id) {
-  throw NotImplementedException("Not Implemented");
-}
-
-//public function deleteIndex(mixed $keys): array;
-static Array HHVM_METHOD(MongoCollection, deleteIndex, Variant keys) {
-  throw NotImplementedException("Not Implemented");
-}
-
-//public function deleteIndexes(): array;
-static Array HHVM_METHOD(MongoCollection, deleteIndexes) {
-  throw NotImplementedException("Not Implemented");
-}
-
-//public function distinct(string $key, array $query): array;
-static Array HHVM_METHOD(MongoCollection, distinct, const String& key, Array query) {
-  throw NotImplementedException("Not Implemented");
-}
-
-//public function drop(): array;
-static Array HHVM_METHOD(MongoCollection, drop) {
-  mongoc_collection_t *collection;
-  bson_error_t error;
-
-  collection = get_collection(this_);
-
-  bool result = mongoc_collection_drop(collection, &error);
-
-  auto ret = Array::Create("return", result);
-  return ret;
-  /*
-  mongoc_collection_drop (mongoc_collection_t           *collection,
-                          bson_error_t                  *error);
-  */
-}
-
-//public function ensureIndex(mixed $key, array $options = array()): bool;
-static bool HHVM_METHOD(MongoCollection, ensureIndex, Variant key, Array options) {
-  throw NotImplementedException("Not Implemented");
-}
-
-/*
-  public function findAndModify(array $query,
-                                array $update,
-                                array $fields,
-                                array $options): array;
-*/
-static Array HHVM_METHOD(MongoCollection, findAndModify, Array query, Array update, Array fields, Array options) {
-  
-  mongoc_collection_t *collection; 
-  bson_t query_b = BSON_INITIALIZER;
-  //bson_t *update_b;
-  bson_t reply;
-  bson_error_t error; 
-
-  collection = get_collection(this_); 
-
-  //TODO: 
-  //set query, update and fields
-
-  bool result = mongoc_collection_find_and_modify(collection, &query_b, NULL, NULL, NULL, false, false, true, &reply, &error); 
-  
-  /*
-  bool
-mongoc_collection_find_and_modify (mongoc_collection_t *collection,
-                                   const bson_t        *query,
-                                   const bson_t        *sort,
-                                   const bson_t        *update,
-                                   const bson_t        *fields,
-                                   bool                 _remove,
-                                   bool                 upsert,
-                                   bool                 _new,
-                                   bson_t              *reply,
-                                   bson_error_t        *error)
-                                   */
-
-  bson_destroy (&reply);
-  //bson_destroy (update_b);
-  bson_destroy(&query_b);
-
-  auto ret = Array::Create("return", result);
-  return ret;
-
-}
-
-//public function getDBRef(array $ref): array;
-static Array HHVM_METHOD(MongoCollection, getDBRef, Array ref) {
-  throw NotImplementedException("Not Implemented");
-}
-
-//public function getIndexInfo(): array;
-static Array HHVM_METHOD(MongoCollection, getIndexInfo) {
-  throw NotImplementedException("Not Implemented");
-}
-
  /**
    * Inserts a document into the collection
    *
@@ -159,6 +63,7 @@ static Variant HHVM_METHOD(MongoCollection, insert, Variant a, Array options) {
 
 }
 
+
 /**
    * Remove records from this collection
    *
@@ -197,46 +102,6 @@ static Variant HHVM_METHOD(MongoCollection, remove, Array criteria, Array option
   */
 }
 
-//public function save(mixed $a, array $options = array()): mixed;
-static Variant HHVM_METHOD(MongoCollection, save, Variant a, Array options) {
-  mongoc_collection_t *collection;
-  bson_t doc;
-  bson_error_t error;
-  bson_oid_t oid;
-
-  collection = get_collection(this_);
-
-  Array doc_array = a.toArray();
-  bson_init(&doc);
-  bson_oid_init_from_string(&oid, doc_array[String("_id")].toString().c_str());
-  bson_append_oid(&doc, "_id", 3, &oid);
-  //Supporting only "name" key
-  bson_append_utf8(&doc, "name", 4, doc_array[String("name")].toString().c_str(), doc_array[String("name")].toString().length());
-
-  bool ret = mongoc_collection_save(collection, &doc, NULL, &error);
-
-  mongoc_collection_destroy (collection);
-  bson_destroy(&doc);
-
-  return ret;
-
-  /*
-  bool
-mongoc_collection_save (mongoc_collection_t          *collection,
-                        const bson_t                 *document,
-                        const mongoc_write_concern_t *write_concern,
-                        bson_error_t                 *error)
-  */
-}
-
-//static protected function toIndexString(mixed $keys): string;
-static String HHVM_STATIC_METHOD(MongoCollection, toIndexString, Variant keys) {
-  throw NotImplementedException("Not Implemented");
-/*
-char *
-mongoc_collection_keys_to_index_string (const bson_t *keys)
-*/
-}
 
 /*
 public function update(array $criteria,
@@ -284,29 +149,13 @@ mongoc_collection_update (mongoc_collection_t          *collection,
 */
 }
 
-//public function validate(bool $scan_data = false): array;
-static Array HHVM_METHOD(MongoCollection, validate, bool scan_data) {
-  throw NotImplementedException("Not Implemented");
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void mongoExtension::_initMongoCollectionClass() {
-    HHVM_ME(MongoCollection, createDBRef);
-    HHVM_ME(MongoCollection, deleteIndex);
-    HHVM_ME(MongoCollection, deleteIndexes);
-    HHVM_ME(MongoCollection, distinct);
-    HHVM_ME(MongoCollection, drop);
-    HHVM_ME(MongoCollection, ensureIndex);
-    HHVM_ME(MongoCollection, findAndModify);
-    HHVM_ME(MongoCollection, getDBRef);
-    HHVM_ME(MongoCollection, getIndexInfo);
     HHVM_ME(MongoCollection, insert);
     HHVM_ME(MongoCollection, remove);
-    HHVM_ME(MongoCollection, save);
-    HHVM_STATIC_ME(MongoCollection, toIndexString);
     HHVM_ME(MongoCollection, update);
-    HHVM_ME(MongoCollection, validate);
 }
 
 } // namespace HPHP
