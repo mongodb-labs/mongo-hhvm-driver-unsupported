@@ -63,21 +63,34 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 	public function testEncodeDecode() {
 		$a1 = array("hello" => "world");
     	//var_dump(Encoding::bson_decode(Encoding::bson_encode($a1)));
-    	//var_dump($a1);
 		$this->assertEquals($a1, Encoding::bson_decode(Encoding::bson_encode($a1)));
 
 		$id = new MongoId();
+		$a2 = array();
 		$a2 = array("_id" => $id);
-		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
+		//$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
 
 		$int32 = new MongoInt32("32");
 		$a2["a_int32"] = $int32;
 		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
 
+
 		$int64 = new MongoInt64("64");
 		$a2["a_int64"] = $int64;
     //var_dump(Encoding::bson_decode(Encoding::bson_encode($a2["a_int32"])));
 		$this->assertEquals($a2["a_int64"], Encoding::bson_decode(Encoding::bson_encode($a2["a_int64"])));
+
+	    $bool = true;
+	    $a2["boolean"] = $bool;
+			$this->assertTrue((Encoding::bson_decode(Encoding::bson_encode($a2["boolean"])))[0] == $a2["boolean"]);
+	    
+	    $null = null;
+	    $a2["null"] = $null;
+			$this->assertTrue((Encoding::bson_decode(Encoding::bson_encode($a2["null"])))[0] == $a2["null"]);
+	    
+	    $double = 3.2;
+	    $a2["double"] = $double;
+			$this->assertTrue((Encoding::bson_decode(Encoding::bson_encode($a2["double"])))[0] == $a2["double"]);    
 
 		$a3 = array("nested" => $a1);
 		$this->assertEquals($a3, Encoding::bson_decode(Encoding::bson_encode($a3)));

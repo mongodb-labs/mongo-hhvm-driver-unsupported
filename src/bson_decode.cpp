@@ -58,7 +58,24 @@ static bool
 cbson_loads_visit_array (const bson_iter_t *iter,
                          const char        *key,
                          const bson_t      *v_array,
-                         void              *data);                         
+                         void              *data);
+
+static bool
+cbson_loads_visit_binary (const bson_iter_t *iter,
+                          const char        *key,
+                          bson_subtype_t     v_subtype,
+                          size_t             v_binary_len,
+                          const uint8_t     *v_binary,
+                          void              *output)
+{
+  ObjectData * data = create_object(&s_MongoBinData,
+    make_packed_array(
+      String((const char*) v_binary, v_binary_len, CopyString),
+      (int) v_subtype));
+  ((Array *) output) -> add(String(key), data);
+  return false;
+
+}                       
 
 static bool
 cbson_loads_visit_oid (const bson_iter_t *iter,
@@ -127,6 +144,38 @@ cbson_loads_visit_regex (const bson_iter_t *iter,
 }
 
 static bool
+cbson_loads_visit_dbpointer (const bson_iter_t *iter,
+                             const char        *key,
+                             size_t             v_collection_len,
+                             const char        *v_collection,
+                             const bson_oid_t  *v_oid,
+                             void              *output)
+{
+  char id[25];
+  bson_oid_to_string(v_oid, id);
+  ObjectData * data = create_object(&s_MongoDBRef,
+    make_packed_array(
+      String(v_collection, v_collection_len, CopyString),
+      String(id)));
+  ((Array *)output)->add(String(key), data);
+  return false;
+  //TODO: Finish this
+}
+
+static bool
+cbson_loads_visit_code (const bson_iter_t *iter,
+                        const char        *key,
+                        size_t             v_code_len,
+                        const char        *v_code,
+                        void              *output)
+{
+  ObjectData * data = create_object(&s_MongoCode,
+    make_packed_array(String(v_code, v_code_len, CopyString)));
+  ((Array *)output)->add(String(key), data);
+  return false;
+}
+
+static bool
 cbson_loads_visit_int32 (const bson_iter_t *iter,
                          const char         *key,
                          int32_t           v_int32,
@@ -162,6 +211,26 @@ cbson_loads_visit_int64 (const bson_iter_t *iter,
   return false;
 }
 
+static bool
+cbson_loads_visit_maxkey (const bson_iter_t *iter,
+                          const char*        key,
+                          void              *output)
+{
+  ObjectData * data = create_object(&s_MongoMaxKey, Array());
+  ((Array *)output)->add(String(key), data);
+  return false;
+}
+
+static bool
+cbson_loads_visit_minkey (const bson_iter_t *iter,
+                          const char*        key,
+                          void              *output)
+{
+  ObjectData * data = create_object(&s_MongoMinKey, Array());
+  ((Array *)output)->add(String(key), data);
+  return false;
+}
+
 static const 
 bson_visitor_t gLoadsVisitors = {
   NULL, //TODO: visit before
@@ -171,22 +240,22 @@ bson_visitor_t gLoadsVisitors = {
   cbson_loads_visit_utf8,
   cbson_loads_visit_document,
   cbson_loads_visit_array,
-  NULL, //TODO: visit binary
+  cbson_loads_visit_binary, //TODO: visit binary
   NULL, //TODO: visit undefined
   cbson_loads_visit_oid,
   cbson_loads_visit_bool,
   cbson_loads_visit_date_time,  
   cbson_loads_visit_null,
   cbson_loads_visit_regex,
-  NULL, //TODO: visit dbpointer
-  NULL, //TODO: visit code
+  cbson_loads_visit_dbpointer, //TODO: visit dbpointer
+  cbson_loads_visit_code, //TODO: visit code
   NULL, //TODO: visit symbol
   NULL, //TODO: visit code with scope
   cbson_loads_visit_int32,  
   cbson_loads_visit_timestamp,
   cbson_loads_visit_int64,
-  NULL, //TODO: visit maxkey
-  NULL, //TODO: visit minkey
+  cbson_loads_visit_maxkey,
+  cbson_loads_visit_minkey,
 };
 
 static bool
