@@ -29,11 +29,8 @@ public:
 private:
   void _initMongoClientClass();
   void _initMongoCursorClass();
-<<<<<<< HEAD
   void _initMongoCollectionClass();
-=======
   void _initBSON();
->>>>>>> 421cdba51a5411a2c01a5d900b4fde755d0fc53f
 };
 
 } // namespace HPHP
