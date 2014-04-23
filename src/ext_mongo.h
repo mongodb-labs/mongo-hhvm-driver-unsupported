@@ -20,6 +20,7 @@ public:
     mongoc_log_set_handler(mongoc_log_handler, NULL);
     _initMongoClientClass();
     _initMongoCursorClass();
+    _initMongoCollectionClass();
     _initBSON();
     loadSystemlib();
   }
@@ -27,6 +28,7 @@ public:
 private:
   void _initMongoClientClass();
   void _initMongoCursorClass();
+  void _initMongoCollectionClass();
   void _initBSON();
 };
 
