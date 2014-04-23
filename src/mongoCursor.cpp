@@ -1,6 +1,8 @@
 #include <iostream>
 #include "ext_mongo.h"
 #include "bson_decode.h"
+#include "contrib/encode.h"
+
 namespace HPHP {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,11 +59,15 @@ static void HHVM_METHOD(MongoCursor, rewind) {
   auto query = this_->o_realProp("query", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
 
   bson_t query_bs;
+  query_bs = encodeToBSON(query);
+  /*
   bson_init(&query_bs);
   if (!query->empty()) {
     //Currently only supports "name" query
     bson_append_utf8(&query_bs, "name", 4, query[String("name")].toString().c_str(), query[String("name")].toString().length());
+
   }
+  */
 
 //Parameters and their types:
 //static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields)
