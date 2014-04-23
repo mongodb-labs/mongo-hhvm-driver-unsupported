@@ -278,7 +278,7 @@ class MongoCollection {
   public function find(array $query = array(),
                        array $fields = array()): MongoCursor {
     $ns = $this->getFullName();
-    return new MongoCursor($this->db->__GetClient(), $ns, $query, $fields);
+    return new MongoCursor($this->db->__getClient(), $ns, $query, $fields);
   }
 
   /**
@@ -320,8 +320,10 @@ class MongoCollection {
                           array $fields = array()): array {
     $cursor = $this->find($query, $fields);
     $cursor = $cursor->limit(-1);
-    if (!$cursor->hasNext()) {
-      return null;
+    $cursor->rewind(); // TODO: Need to remove later 
+    var_dump($cursor->current());
+    if (!$cursor->hasNext()) { 
+      throw new MongoCursorException("FindOne has no result!");
     }
     $cursor->next();
     $ret = $cursor->current();
