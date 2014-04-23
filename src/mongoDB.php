@@ -53,7 +53,11 @@ class MongoDB {
      */
     public function command(array $command,
                             array $options = array()): array {
-        return $this->selectCollection("$cmd")->findOne($command);
+        //echo "Running command ";
+        //var_dump($command);
+        //$coll = $this->selectCollection('$cmd');
+        //echo "Finished selecting collection ";
+        return $this->selectCollection('$cmd')->findOne($command);
     }
 
     /**
