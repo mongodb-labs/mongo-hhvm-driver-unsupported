@@ -12,7 +12,7 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson .= pack('x');                            // null byte: document terminator
 		$bson  = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
 
-		$this->assertEquals(array("x" => "a"), Encoding::bson_decode($bson));
+		$this->assertEquals(array("x" => "a"), bson_decode($bson));
 
 		//echo "\nTesting oid\n";
 		$bson  = pack('C', 0x07);                      // byte: oid type
@@ -22,7 +22,7 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson  = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
 
 		$expected = array("id" => new MongoId("507f191e810c19729de860ea"));
-		$this->assertEquals($expected, Encoding::bson_decode($bson));
+		$this->assertEquals($expected, bson_decode($bson));
 
 		//echo "\nTesting nested docs\n";
 		$inner_doc = $bson;
@@ -32,9 +32,9 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson .= $inner_doc;						   // an inner document
 		$bson .= pack('x');                            // null byte: document terminator
 		$bson  = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
-		//assert(Encoding::bson_decode($bson) == var_dump(array(["x"] => "")));
+		//assert(bson_decode($bson) == var_dump(array(["x"] => "")));
 		$expected = array("doc" => $inner_expected);
-		$this->assertEquals($expected, Encoding::bson_decode($bson));
+		$this->assertEquals($expected, bson_decode($bson));
 
 		/*echo "\nTesting datetime\n";
 		$bson  = pack('C', 0x09);                      // byte: datetime type
@@ -42,11 +42,11 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson .= pack('H16', "0123456789abcde0");
 		$bson .= pack('x');                            // null byte: document terminator
 		$bson  = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
-		//assert(Encoding::bson_decode($bson) == var_dump(array(["x"] => "")));
+		//assert(bson_decode($bson) == var_dump(array(["x"] => "")));
 		$date = new MongoDate();
 		printf("Date: %s", $date);
 		$expected = array("date" => $date);
-		$this->assertEquals($expected, Encoding::bson_decode($bson));*/
+		$this->assertEquals($expected, bson_decode($bson));*/
 
 
 		//echo "\nTesting string type\n";
@@ -56,42 +56,42 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 		$bson .= pack('a*x', ''); // cstring: string value
 		$bson .= pack('x'); // null byte: document terminator
 		$bson = pack('V', 4 + strlen($bson)) . $bson; // int32: document length
-		//var_dump(Encoding::bson_decode($bson));
+		//var_dump(bson_decode($bson));
 
 	}
 
 	public function testEncodeDecode() {
 		$a1 = array("hello" => "world");
-    	//var_dump(Encoding::bson_decode(Encoding::bson_encode($a1)));
-		$this->assertEquals($a1, Encoding::bson_decode(Encoding::bson_encode($a1)));
+    	//var_dump(bson_decode(bson_encode($a1)));
+		$this->assertEquals($a1, bson_decode(bson_encode($a1)));
 
 		$id = new MongoId();
 		$a2 = array("_id" => $id);
 
-	    $en_result = Encoding::bson_encode($a2);
-	    $result = Encoding::bson_decode($en_result);
+	    $en_result = bson_encode($a2);
+	    $result = bson_decode($en_result);
 	    $this->assertEquals($a2, $result);
     
 		$int32 = 2;
 		$a2["a_int32"] = $int32;
-	    $result = Encoding::bson_decode(Encoding::bson_encode($a2));
+	    $result = bson_decode(bson_encode($a2));
 		$this->assertEquals($a2, $result);
 	/*
 			$int64 = new MongoInt64("64");
 			$a2["a_int64"] = $int64;
-	    //var_dump(Encoding::bson_decode(Encoding::bson_encode($a2["a_int32"])));
-			//$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a2["a_int64"])) == $a2["a_int64"]);
+	    //var_dump(bson_decode(bson_encode($a2["a_int32"])));
+			//$this->assertTrue(bson_decode(bson_encode($a2["a_int64"])) == $a2["a_int64"]);
 	*/
 	    $bool = true;
 	    $a2["boolean"] = $bool;
-		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
+		$this->assertEquals($a2, bson_decode(bson_encode($a2)));
 	    
 	    $null = null;
 	    $a2["null"] = $null;
-		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
+		$this->assertEquals($a2, bson_decode(bson_encode($a2)));
 	    
 	    $double = 3.2;
 	    $a2["double"] = $double;
-		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2))); 
+		$this->assertEquals($a2, bson_decode(bson_encode($a2))); 
 	}
 } 	
