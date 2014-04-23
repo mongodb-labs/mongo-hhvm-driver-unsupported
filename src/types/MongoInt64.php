@@ -6,9 +6,6 @@
 */
 class MongoInt64
 {
-	/**
-	* @var string
-	*/
     public $value;
 
 	/**
@@ -18,9 +15,9 @@ class MongoInt64
 	*
 	* @return - Returns a new integer.
 	*/
-    public function __construct($value)
+    public function __construct(string $value)
     {
-        $this->value = (string) $value;
+        $this->value = $value;
     }
 
 	/**
@@ -30,6 +27,6 @@ class MongoInt64
 	*/
     public function __toString()
     {
-        return (string) $this->value;
+        return $this->value;
     }
 }

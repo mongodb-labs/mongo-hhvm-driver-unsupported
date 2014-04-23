@@ -1,6 +1,6 @@
 #include <iostream>
 #include "ext_mongo.h"
-
+#include "bson_decode.h"
 namespace HPHP {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -9,13 +9,10 @@ namespace HPHP {
 static Array HHVM_METHOD(MongoCursor, current) {
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
   const bson_t *doc;
-  char *str;
 
   doc = mongoc_cursor_current(cursor);
   if (doc) {
-    str = bson_as_json (doc, NULL);
-    auto ret = Array::Create("return", str); //TODO: We should return the translated PHP Array here  
-    bson_free (str);
+    auto ret = cbson_loads(doc); //TODO: We should return the translated PHP Array here  
     return ret;   
   } else {
     return Array::Create(); //Empty array means no valid document left

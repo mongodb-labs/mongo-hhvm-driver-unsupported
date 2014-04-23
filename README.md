@@ -67,3 +67,7 @@ $ ./test.sh
 The test script depends on the `HPHP_HOME` environment variable and will attempt
 to locate PHPUnit via the `which` command, so ensure that the `phpunit` binary
 is installed in an executable path.
+
+## Credits
+
+Máximo Cuadros created the src/contrib/encode.h, src/contrib/encode.cpp and src/contrib/classes.h files.

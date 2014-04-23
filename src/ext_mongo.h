@@ -2,7 +2,6 @@
 #define incl_HPHP_EXT_MONGO_H_
 
 #include "mongo_common.h"
-
 namespace HPHP {
 
 static void mongoc_log_handler(mongoc_log_level_t log_level,
@@ -17,17 +16,20 @@ class mongoExtension : public Extension {
 public:
   mongoExtension() : Extension("mongo") {}
   virtual void moduleInit() {
-    mongoc_log_set_handler(mongoc_log_handler, NULL);
 
+    mongoc_log_set_handler(mongoc_log_handler, NULL);
     _initMongoClientClass();
     _initMongoCursorClass();
-    
+    _initMongoCollectionClass();
+    _initBSON();
     loadSystemlib();
   }
 
 private:
   void _initMongoClientClass();
   void _initMongoCursorClass();
+  void _initMongoCollectionClass();
+  void _initBSON();
 };
 
 } // namespace HPHP

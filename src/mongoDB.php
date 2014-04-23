@@ -11,6 +11,7 @@ class MongoDB {
     private $db_name = "";
     private $slaveOkay = false;
     private $read_preference = [];
+    private $write_concern = [];
 
     /**
      * Log in to this database
@@ -52,7 +53,11 @@ class MongoDB {
      */
     public function command(array $command,
                             array $options = array()): array {
-        return $this->selectCollection("$cmd")->findOne($command);
+        //echo "Running command ";
+        //var_dump($command);
+        //$coll = $this->selectCollection('$cmd');
+        //echo "Finished selecting collection ";
+        return $this->selectCollection('$cmd')->findOne($command);
     }
 
     /**
@@ -83,14 +88,16 @@ class MongoDB {
      *   the new collection.
      */
     public function createCollection(string $name,
-                                      array $options): MongoCollection {
-        $result = $this->command(array(
-            "create" => $name,
-            "capped" => $options["capped"],
-            "size" => $options["size"],
-            "max" => $options["max"],
-            "autoIndexId" => $options["autoIndexId"],
-        ));
+                                      array $options = array()): MongoCollection {
+        $cmd = array("create" => $name);
+        $option_choices = array("capped", "size", "max", "autoIndexId");
+        foreach ($option_choices as $op) {
+            if(isset($options[$op])) {
+                $cmd[$op] = $options[$op];
+            }
+        }
+        $result = $this->command($cmd);
+        
         if (!$result["ok"]) {
             throw new MongoException("Unable to create collection");
         }
@@ -176,6 +183,10 @@ class MongoDB {
      */
     public function __get(string $name): MongoCollection {
         return $this->selectCollection($name);
+    }
+
+    public function __getDBName(): string {
+        return $this->db_name;
     }
 
     public function __getClient(): MongoClient {
@@ -373,6 +384,16 @@ class MongoDB {
         $former = $this->slaveOkay;
         $this->slaveOkay = $ok;
         return $former;
+    }
+
+    public function setWriteConcern(mixed $w, int $timeout = 10000) {
+        if( !is_integer($w) || !is_string($w)) {
+            throw Exception("Invalid argument to set write concern");
+        }
+        $this->writeConcern["w"] = $w;
+        if (!isset($this->writeConcern["timeout"])) {
+            $this->writeConcern["timeout"] = $timeout;
+        }
     }
 
     /**
