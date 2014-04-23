@@ -30,4 +30,5 @@ void mongoInt32ToBSON(const Object& value, const char* key, bson_t* bson);
 void mongoInt64ToBSON(const Object& value, const char* key, bson_t* bson);
 void mongoMinKeyToBSON(const char* key, bson_t* bson);
 void mongoMaxKeyToBSON(const char* key, bson_t* bson);
+bson_t encodeToBSON(const Variant& mixture);
 }

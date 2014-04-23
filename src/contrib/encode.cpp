@@ -214,4 +214,11 @@ bool arrayIsDocument(const Array& arr) {
 
   return false;
 }
+
+bson_t encodeToBSON(const Variant& mixture) {
+  bson_t bson;
+  bson_init(&bson);
+  fillBSONWithArray(mixture.toArray(), &bson);
+  return bson;
+}
 } 

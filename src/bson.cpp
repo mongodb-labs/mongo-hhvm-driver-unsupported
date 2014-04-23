@@ -10,9 +10,7 @@ namespace HPHP {
   }
 
   static String encode(const Variant& mixture) {
-    bson_t bson;
-    bson_init(&bson);
-    fillBSONWithArray(mixture.toArray(), &bson);
+    bson_t bson = encodeToBSON(mixture);
 
     const char* output = (const char*) bson_get_data(&bson);        
     String s = String(output, bson.len, CopyString);
@@ -25,6 +23,7 @@ namespace HPHP {
 
   void mongoExtension::_initBSON() {
     HHVM_STATIC_ME(Encoding, bson_decode);
+    // HHVM_STATIC_ME(Encoding, bson_encode_to_bson);
     HHVM_STATIC_ME(Encoding, bson_encode);
   }
 
