@@ -1,10 +1,7 @@
 <?hh
 
-class Encoding {
+<<__Native>>
+function bson_decode(string $bson): array;
 
-	<<__Native>>
-	public static function bson_decode(string $bson): array;
-
-  <<__Native>>
-  public static function bson_encode(mixed $mixture): string;
-}
+<<__Native>>
+function bson_encode(mixed $value): string;

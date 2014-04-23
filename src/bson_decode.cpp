@@ -318,8 +318,8 @@ cbson_loads (const bson_t * bson)
   if (!bson_iter_init(&iter, bson))
   {
 
-    printf("Failed to initialize bson iterator. \n");
-    return NULL;
+    // printf("Failed to initialize bson iterator. \n");
+    throw Exception("Failed to initialize BSON iterator");
   }
   bson_iter_visit_all(&iter, &gLoadsVisitors, &ret);
 
