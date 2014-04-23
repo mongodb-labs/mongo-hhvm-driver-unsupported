@@ -3,7 +3,7 @@
 class MongoCursorTest extends MongoTestCase {
 	
 	public function testConstructCursor() {
-		$cli = new MongoClient();
+		$cli = $this->getTestClient();
 		$database_name = "test.students";
 		$cursor = new MongoCursor(	$cli, 
 									$database_name);
