@@ -13,8 +13,7 @@ class MongoCollectionStub extends MongoCollection {
 class MongoCollectionTest extends MongoTestCase {
 
 	public function testMongoCollection() {
-		printf("Running testMongoCollection\n");
-		$cli = new MongoClient();
+		$cli = $this->getTestClient();
 		$database_name = "test";
 		$db = new MongoDB($cli, $database_name);
 		$coll_name = "students";
@@ -64,8 +63,6 @@ class MongoCollectionTest extends MongoTestCase {
 		//     }
 		//     $cursor->next();
 		// }
-
-		printf("Ended testMongoCollection\n\n");
 
 		$cli = $this->getTestClient();
 		$db = $this->getTestDB();
