@@ -62,21 +62,36 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 
 	public function testEncodeDecode() {
 		$a1 = array("hello" => "world");
-		//$this->assertTrue(bson_decode(bson_encode($a1)) == $a1);
+    	//var_dump(Encoding::bson_decode(Encoding::bson_encode($a1)));
+		$this->assertEquals($a1, Encoding::bson_decode(Encoding::bson_encode($a1)));
 
 		$id = new MongoId();
 		$a2 = array("_id" => $id);
-		//$this->assertTrue(bson_decode(bson_encode($a2)) == $a2);
 
-		$int32 = new MongoInt32("32");
+	    $en_result = Encoding::bson_encode($a2);
+	    $result = Encoding::bson_decode($en_result);
+	    $this->assertEquals($a2, $result);
+    
+		$int32 = 2;
 		$a2["a_int32"] = $int32;
-		//$this->assertTrue(bson_decode(bson_encode($a2)) == $a2);
-
-		$int64 = new MongoInt64("64");
-		$a2["a_int64"] = $int64;
-		//$this->assertTrue(bson_decode(bson_encode($a2)) == $a2);
-
-		$a3 = array("nested" => $a1);
-		//$this->assertTrue(bson_decode(bson_encode($a3)) == $a3);
+	    $result = Encoding::bson_decode(Encoding::bson_encode($a2));
+		$this->assertEquals($a2, $result);
+	/*
+			$int64 = new MongoInt64("64");
+			$a2["a_int64"] = $int64;
+	    //var_dump(Encoding::bson_decode(Encoding::bson_encode($a2["a_int32"])));
+			//$this->assertTrue(Encoding::bson_decode(Encoding::bson_encode($a2["a_int64"])) == $a2["a_int64"]);
+	*/
+	    $bool = true;
+	    $a2["boolean"] = $bool;
+		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
+	    
+	    $null = null;
+	    $a2["null"] = $null;
+		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2)));
+	    
+	    $double = 3.2;
+	    $a2["double"] = $double;
+		$this->assertEquals($a2, Encoding::bson_decode(Encoding::bson_encode($a2))); 
 	}
 } 	

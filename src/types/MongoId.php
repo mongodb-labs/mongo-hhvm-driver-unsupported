@@ -50,7 +50,7 @@ class MongoId
 		} else {
 			throw new MongoException('Invalid object ID', 19);
 		}
-
+		$this->{'$id'} = $id;
 		$this->id = $id;
 	}
 
