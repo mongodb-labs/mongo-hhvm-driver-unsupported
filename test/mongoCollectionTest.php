@@ -27,9 +27,7 @@ class MongoCollectionTest extends MongoTestCase {
 		while ($cursor->valid())
 		{
 		    $value = $cursor->current();
-		    if (strpos($value["return"], "\"name\" : \"Dan\"") == FALSE) {
-		    	throw new Exception("MongoCollection insert failed.");
-		    }
+		    $this->assertEquals("Dan", $value["name"]);
 		    $cursor->next();
 		}
 		$this->assertEquals(true, $coll->remove(array("name"=>"Dan")));
