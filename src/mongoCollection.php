@@ -73,7 +73,7 @@ class MongoCollection {
 
 
   private function getFullName(): string {
-    return $this->db . $this->name;
+    return $this->db . "." . $this->name;
    }
   /**
    * Perform an aggregation using the aggregation framework
