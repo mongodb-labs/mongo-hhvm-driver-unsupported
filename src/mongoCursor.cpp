@@ -57,7 +57,6 @@ static void HHVM_METHOD(MongoCursor, rewind) {
   auto connection = this_->o_realProp("connection", ObjectData::RealPropUnchecked, "MongoCursor")->toObject();
   auto ns = this_->o_realProp("ns", ObjectData::RealPropUnchecked, "MongoCursor")->toString();
   auto query = this_->o_realProp("query", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
-
   bson_t query_bs;
   query_bs = encodeToBSON(query);
   /*
@@ -85,7 +84,7 @@ MongocCursor(mongoc_client_t           *client,
                 */
 
   MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
-
+  //std::cout << "Got past cursor construction with" << ns.c_str() << std::endl;
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
 

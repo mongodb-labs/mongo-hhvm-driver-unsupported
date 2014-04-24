@@ -227,14 +227,8 @@ class MongoCursor {
    * @return array - Returns the next object.
    */
   public function getNext(): array {
-    if ($this->valid()) {
-      $current_record = $this->current();
       $this->next();
-      return $current_record;
-    } else {
-      throw new MongoCursorException();
-    }
-    
+      return $this->current();
   }
 
   /**

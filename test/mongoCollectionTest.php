@@ -12,12 +12,15 @@ class MongoCollectionStub extends MongoCollection {
 
 class MongoCollectionTest extends MongoTestCase {
 
-	public function testMongoCollection() {
+	public function testInsertAndRemove() {
 		$cli = $this->getTestClient();
 		$database_name = "test";
 		$db = new MongoDB($cli, $database_name);
 		$coll_name = "students";
 		$coll = new MongoCollection($db, $coll_name);
+
+		// in case function never completes, need to remove Dan or will trigger insert error
+		$coll->remove(array("name"=>"Dan"));
 
 		//Test case for insert and remove
 		$new_doc = array("_id"=>"123456781234567812345678", "name" => "Dan"); //24-digit _id required
@@ -31,7 +34,9 @@ class MongoCollectionTest extends MongoTestCase {
 		    $cursor->next();
 		}
 		$this->assertEquals(true, $coll->remove(array("name"=>"Dan")));
-
+		$cursor = $coll->find(array("name" => "Dan"));
+		$cursor->rewind();
+		$this->assertEquals(array(), $cursor->current());
 		// //Test case for drop
 		// $temp_coll = new MongoCollection($db, "temp");
 		// //$this->assertEquals(true, $temp_coll->drop()["return"]);
@@ -61,11 +66,12 @@ class MongoCollectionTest extends MongoTestCase {
 		//     }
 		//     $cursor->next();
 		// }
+	}
 
-		$cli = $this->getTestClient();
+	public function testToIndexString() {
 		$db = $this->getTestDB();
 		$coll_name = "students";
-		$coll = $db->__get($coll_name);
+		$coll = $db->selectCollection($coll_name);
 
 		// Testing toIndexString
 		$c = new MongoCollectionStub();
@@ -76,6 +82,5 @@ class MongoCollectionTest extends MongoTestCase {
 		$actual = $c->createIndexString(array('name' => 1, 'age' => -1, 'bool' => false));
 		$expected = "name_1_age_-1_bool_1";
 		$this->assertEquals($expected, $actual);
-
 	}
 }
