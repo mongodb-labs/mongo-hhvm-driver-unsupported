@@ -102,11 +102,75 @@ MongocCursor(mongoc_client_t           *client,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs);
                 
-
   MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
   //std::cout << "Got past cursor construction with" << ns.c_str() << std::endl;
+
+/* fields needed:
+  
+  private $flags = [];  //TODO: implement this
+  private $skip = 0;
+  private $limit = 0;
+  private $batchSize = 100;
+  private $fields = [];
+  private $read_preference = [];
+
+  */
+
+  bson_t fields_bs;
+  mongoc_read_prefs_t *read_prefs;
+  bson_t read_prefs_tags_bs;
+
+  auto flags_array = this_->o_realProp("flags", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
+  mongoc_query_flags_t flags = MONGOC_QUERY_NONE;
+
+  //if (flags_array->exists(0)) { flags |= MONGOC_QUERY_NONE;}
+  // if (flags_array->exists(1)) { flags = (flags | MONGOC_QUERY_TAILABLE_CURSOR);}
+  // if (flags_array->exists(2)) { flags = (flags | MONGOC_QUERY_SLAVE_OK);}
+  // if (flags_array->exists(3)) { flags = (flags | MONGOC_QUERY_OPLOG_REPLAY);}
+  // if (flags_array->exists(4)) { flags = (flags | MONGOC_QUERY_NO_CURSOR_TIMEOUT);}
+  // if (flags_array->exists(5)) { flags = (flags | MONGOC_QUERY_AWAIT_DATA);}
+  // if (flags_array->exists(6)) { flags = (flags | MONGOC_QUERY_EXHAUST);}
+  // if (flags_array->exists(7)) { flags = (flags | MONGOC_QUERY_PARTIAL);}
+
+  uint32_t skip = this_->o_realProp("skip", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
+  uint32_t limit = this_->o_realProp("limit", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
+  uint32_t batchSize = this_->o_realProp("batchSize", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
+  auto fields = this_->o_realProp("fields", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
+
+  auto read_prefs_array = this_->o_realProp("read_preference", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
+  String read_pref_type = read_prefs_array[String("type")].toString();
+  Array read_pref_tagsets = read_prefs_array[String("tagsets")].toArray();
+  read_prefs_tags_bs = encodeToBSON(read_pref_tagsets);
+  /*
+  MongoClient::RP_PRIMARY, 
+  MongoClient::RP_PRIMARY_PREFERRED, 
+  MongoClient::RP_SECONDARY, 
+  MongoClient::RP_SECONDARY_PREFERRED, 
+  MongoClient::RP_NEAREST
+  */
+  read_prefs = mongoc_read_prefs_new(MONGOC_READ_PRIMARY);
+
+  if (read_pref_type.equal(String("RP_PRIMARY"))) {
+    mongoc_read_prefs_set_mode(read_prefs, MONGOC_READ_PRIMARY);
+  } else if (read_pref_type.equal(String("RP_PRIMARY_PREFERRED"))) {
+    mongoc_read_prefs_set_mode(read_prefs, MONGOC_READ_PRIMARY_PREFERRED);
+  } else if (read_pref_type.equal(String("RP_SECONDARY"))) {
+    mongoc_read_prefs_set_mode(read_prefs, MONGOC_READ_SECONDARY);
+  } else if (read_pref_type.equal(String("RP_SECONDARY_PREFERRED"))) {
+    mongoc_read_prefs_set_mode(read_prefs, MONGOC_READ_SECONDARY_PREFERRED);
+  } else if (read_pref_type.equal(String("RP_NEAREST"))) {
+    mongoc_read_prefs_set_mode(read_prefs, MONGOC_READ_NEAREST);
+  }
+  mongoc_read_prefs_set_tags(read_prefs, &read_prefs_tags_bs);
+  
+  fields_bs = encodeToBSON(fields);   
+
+  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
+
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
+  bson_destroy(&fields_bs);
+  bson_destroy(&read_prefs_tags_bs);
 
   this_->o_set("started_iterating", Variant(true), "MongoCursor");
 
