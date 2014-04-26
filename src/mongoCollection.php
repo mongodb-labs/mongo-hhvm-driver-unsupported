@@ -73,7 +73,7 @@ class MongoCollection {
 
 
   private function getFullName(): string {
-    return $this->db . $this->name;
+    return $this->db . "." . $this->name;
    }
   /**
    * Perform an aggregation using the aggregation framework
@@ -263,12 +263,11 @@ class MongoCollection {
     return $out;
   }
 
-  /** TODO
+  /**
    * Queries this collection, returning a
    *   for the result set
    *
    * @param array $query - query    The fields for which to search.
-
    * @param array $fields - fields    Fields of the results to return.
    *   The array is in the format array('fieldname' => true, 'fieldname2'
    *   => true). The _id field is always returned.
@@ -322,15 +321,7 @@ class MongoCollection {
     $cursor = $cursor->limit(-1);
     $cursor->rewind(); // TODO: Need to remove later 
     var_dump($cursor->current());
-    if (!$cursor->hasNext()) { 
-      throw new MongoCursorException("FindOne has no result!");
-    }
-    $cursor->next();
-    $ret = $cursor->current();
-    if ($cursor->hasNext()) {
-      throw new MongoCursorException("findOne has more than 1 result!");
-    }
-    return $ret;
+    return $cursor->current();
   }
 
   /** TODO

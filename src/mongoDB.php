@@ -69,7 +69,6 @@ class MongoDB {
      * @return  - Returns the database.
      */
 
-    //TODO: Make native
     public function __construct(MongoClient $conn, string $name) {
             $this->client = $conn;
             $this->db_name = $name;
