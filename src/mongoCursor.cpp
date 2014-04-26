@@ -61,36 +61,20 @@ static void HHVM_METHOD(MongoCursor, rewind) {
   bson_t query_bs;
   query_bs = encodeToBSON(query);
 
-  // TODO commands
-  auto db = this_->o_realProp("db", ObjectData::RealPropUnchecked, "MongoCollection")->toObject();
-  auto client = db->o_realProp("client", ObjectData::RealPropUnchecked, "MongoDB")->toObject();
-  String db_name = db->o_realProp("db_name", ObjectData::RealPropUnchecked, "MongoDB")->toString();
-  String collection_name = this_->o_realProp("name", ObjectData::RealPropUnchecked, "MongoCollection")->toString();
-  
-  
-  collection = mongoc_client_get_collection (get_client(client)->get(), db_name.c_str(), collection_name.c_str());
-  m_cursor = mongoc_collection_find (collection,
-                                    flags,
-                                    skip,
-                                    limit,
-                                    batch_size,
-                                    query,
-                                    fields,
-                                    read_prefs);
-  
   /*
   bson_init(&query_bs);
   if (!query->empty()) {
     //Currently only supports "name" query
     bson_append_utf8(&query_bs, "name", 4, query[String("name")].toString().c_str(), query[String("name")].toString().length());
-    */
+
 
   }
-  
+  */
 
 //Parameters and their types:
 //static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields)
 
+/*
 MongocCursor(mongoc_client_t           *client,
                 const char                *db_and_collection,
                 mongoc_query_flags_t       flags,
@@ -101,8 +85,10 @@ MongocCursor(mongoc_client_t           *client,
                 const bson_t              *query,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs);
-                
-  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
+ 
+*/
+
+  //MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
   //std::cout << "Got past cursor construction with" << ns.c_str() << std::endl;
 
 /* fields needed:
@@ -163,10 +149,40 @@ MongocCursor(mongoc_client_t           *client,
   }
   mongoc_read_prefs_set_tags(read_prefs, &read_prefs_tags_bs);
   
-  fields_bs = encodeToBSON(fields);   
+  fields_bs = encodeToBSON(fields);
 
-  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
 
+  // TODO commands
+  auto db = this_->o_realProp("db", ObjectData::RealPropUnchecked, "MongoCollection")->toObject();
+  auto client = db->o_realProp("client", ObjectData::RealPropUnchecked, "MongoDB")->toObject();
+  String db_name = db->o_realProp("db_name", ObjectData::RealPropUnchecked, "MongoDB")->toString();
+  String collection_name = this_->o_realProp("name", ObjectData::RealPropUnchecked, "MongoCollection")->toString();
+  
+  
+  collection = mongoc_client_get_collection (get_client(client)->get(), db_name.c_str(), collection_name.c_str());
+  
+  
+  if (collection_name.equal(String("$cmd"))
+  {
+    MongocCursor *cursor = mongoc_collection_find (collection,
+                                    flags,
+                                    skip,
+                                    limit,
+                                    batch_size,
+                                    &query_bs,
+                                    &fields_bs,
+                                    read_prefs);
+
+    // OR Call the mongoc_collection_command function
+
+
+  }
+  else
+  {
+    MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
+  }
+
+  
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
   bson_destroy(&fields_bs);
