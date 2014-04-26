@@ -53,24 +53,44 @@ static void HHVM_METHOD(MongoCursor, reset) {
 static void HHVM_METHOD(MongoCursor, rewind) {
   HHVM_MN(MongoCursor, reset)(this_);
 
+  mongoc_collection_t *collection;
   //TODO: need to test with null value
   auto connection = this_->o_realProp("connection", ObjectData::RealPropUnchecked, "MongoCursor")->toObject();
   auto ns = this_->o_realProp("ns", ObjectData::RealPropUnchecked, "MongoCursor")->toString();
   auto query = this_->o_realProp("query", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
   bson_t query_bs;
   query_bs = encodeToBSON(query);
+
+  // TODO commands
+  auto db = this_->o_realProp("db", ObjectData::RealPropUnchecked, "MongoCollection")->toObject();
+  auto client = db->o_realProp("client", ObjectData::RealPropUnchecked, "MongoDB")->toObject();
+  String db_name = db->o_realProp("db_name", ObjectData::RealPropUnchecked, "MongoDB")->toString();
+  String collection_name = this_->o_realProp("name", ObjectData::RealPropUnchecked, "MongoCollection")->toString();
+  
+  
+  collection = mongoc_client_get_collection (get_client(client)->get(), db_name.c_str(), collection_name.c_str());
+  m_cursor = mongoc_collection_find (collection,
+                                    flags,
+                                    skip,
+                                    limit,
+                                    batch_size,
+                                    query,
+                                    fields,
+                                    read_prefs);
+  
   /*
   bson_init(&query_bs);
   if (!query->empty()) {
     //Currently only supports "name" query
     bson_append_utf8(&query_bs, "name", 4, query[String("name")].toString().c_str(), query[String("name")].toString().length());
+    */
 
   }
-  */
+  
 
 //Parameters and their types:
 //static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields)
-/*
+
 MongocCursor(mongoc_client_t           *client,
                 const char                *db_and_collection,
                 mongoc_query_flags_t       flags,
@@ -81,7 +101,7 @@ MongocCursor(mongoc_client_t           *client,
                 const bson_t              *query,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs);
-                */
+                
 
   MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
   //std::cout << "Got past cursor construction with" << ns.c_str() << std::endl;
