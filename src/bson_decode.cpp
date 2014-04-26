@@ -2,7 +2,7 @@
 #include "./contrib/classes.h"
 #include "hphp/runtime/base/base-includes.h"
 #include "bson_decode.h"
-#include "exceptions/MongoException.h"
+#include "ext_mongo.h"
 
 namespace HPHP {
 
@@ -318,7 +318,7 @@ cbson_loads (const bson_t * bson)
 
   if (!bson_iter_init(&iter, bson))
   {
-    throw MongoException("Failed to initialize BSON iterator");
+    mongoThrow<MongoException>("Failed to initialize BSON iterator");
   }
   bson_iter_visit_all(&iter, &gLoadsVisitors, &ret);
 
@@ -339,7 +339,7 @@ cbson_loads_from_string (const String& bson)
   reader = bson_reader_new_from_data((uint8_t *)bson.c_str(), bson.size());
   
   if (!(obj = bson_reader_read(reader, &reached_eof))) {
-    throw MongoException("Unexpected end of BSON. Input document is likely corrupted!");
+    mongoThrow<MongoException>("Unexpected end of BSON. Input document is likely corrupted!");
   }  
 
   output = cbson_loads(obj);
