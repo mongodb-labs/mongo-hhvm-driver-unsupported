@@ -53,7 +53,6 @@ static void HHVM_METHOD(MongoCursor, reset) {
 static void HHVM_METHOD(MongoCursor, rewind) {
   HHVM_MN(MongoCursor, reset)(this_);
 
-  mongoc_collection_t *collection;
   //TODO: need to test with null value
   auto connection = this_->o_realProp("connection", ObjectData::RealPropUnchecked, "MongoCursor")->toObject();
   auto ns = this_->o_realProp("ns", ObjectData::RealPropUnchecked, "MongoCursor")->toString();
@@ -122,7 +121,6 @@ MongocCursor(mongoc_client_t           *client,
   uint32_t limit = this_->o_realProp("limit", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
   uint32_t batchSize = this_->o_realProp("batchSize", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
   auto fields = this_->o_realProp("fields", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
-
   auto read_prefs_array = this_->o_realProp("read_preference", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
   String read_pref_type = read_prefs_array[String("type")].toString();
   Array read_pref_tagsets = read_prefs_array[String("tagsets")].toArray();
@@ -151,37 +149,16 @@ MongocCursor(mongoc_client_t           *client,
   
   fields_bs = encodeToBSON(fields);
 
-
-  // TODO commands
-  auto db = this_->o_realProp("db", ObjectData::RealPropUnchecked, "MongoCollection")->toObject();
-  auto client = db->o_realProp("client", ObjectData::RealPropUnchecked, "MongoDB")->toObject();
-  String db_name = db->o_realProp("db_name", ObjectData::RealPropUnchecked, "MongoDB")->toString();
-  String collection_name = this_->o_realProp("name", ObjectData::RealPropUnchecked, "MongoCollection")->toString();
-  
-  
-  collection = mongoc_client_get_collection (get_client(client)->get(), db_name.c_str(), collection_name.c_str());
-  
-  
-  if (collection_name.equal(String("$cmd"))
-  {
-    MongocCursor *cursor = mongoc_collection_find (collection,
+  MongocCursor *cursor= new MongocCursor(  get_client(connection)->get(),
+                                    ns.c_str(),
                                     flags,
                                     skip,
                                     limit,
-                                    batch_size,
+                                    batchSize,
+                                    false,
                                     &query_bs,
                                     &fields_bs,
                                     read_prefs);
-
-    // OR Call the mongoc_collection_command function
-
-
-  }
-  else
-  {
-    MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
-  }
-
   
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);

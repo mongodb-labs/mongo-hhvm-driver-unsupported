@@ -11,7 +11,7 @@ class MongoCollection {
   const DESCENDING = -1 ;
   
   /* Fields */
-  private $db = NULL;
+  private $db = null;
   private $w;
   private $wtimeout;
 
@@ -331,7 +331,7 @@ class MongoCollection {
     $cursor = $this->find($query, $fields);
     $cursor = $cursor->limit(-1);
     $cursor->rewind(); // TODO: Need to remove later 
-    var_dump($cursor->current());
+    //var_dump($cursor->current());
     return $cursor->current();
   }
 

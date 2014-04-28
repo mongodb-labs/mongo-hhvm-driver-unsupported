@@ -146,7 +146,7 @@ class MongoDB {
      */
     public function dropCollection(mixed $coll): array {
         if (is_object($coll)) {
-            $coll = (string)$coll;
+            $coll = $coll->getName();
         }
         return $this->command(array('drop' => $coll));
     }
