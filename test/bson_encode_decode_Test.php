@@ -94,4 +94,71 @@ class DecodingTest extends PHPUnit_Framework_TestCase {
 	    $a2["double"] = $double;
 		$this->assertEquals($a2, bson_decode(bson_encode($a2))); 
 	}
+
+	public function testEncodeDecodeNestedDocument() {
+		$id1 = new MongoId();
+
+		$bool = true;
+		$string = "Top level doc";
+		$int64 = 9001;
+		$date = new MongoDate();
+		$timestamp = new MongoTimestamp();
+		$minkey = new MongoMinKey();
+		$maxkey = new MongoMaxKey();
+		$bindata = new MongoBinData("1111");
+
+		$id2 = new MongoId();
+		$string2 = "Inner doc";
+		$array = [0, 1, 2 , 3];
+
+		$inner_doc = array("_id" => $id2, "name" => $string2, "list" => $array);
+
+		$this->assertEquals($inner_doc, bson_decode(bson_encode($inner_doc)));
+
+		$out_doc = array("_id" => $id1, 
+										 "name" => $string, 
+										 "val" => $int64,
+										 "date" => $date,
+										 "timestamp" => $timestamp,
+										 "minkey" => $minkey,
+										 "maxkey" => $maxkey,
+										 "bindata" => $bindata,
+										 "inner_doc" => $inner_doc);
+
+		// var_dump(bson_decode(bson_encode($out_doc)));
+
+		$this->assertEquals($out_doc, bson_decode(bson_encode($out_doc)));
+	}
+
+	public function testDecodeCorruptException() {
+		$id1 = new MongoId();
+
+		$bool = true;
+		$string = "Top level doc";
+		$int64 = 9001;
+		$date = new MongoDate();
+		$timestamp = new MongoTimestamp();
+		$minkey = new MongoMinKey();
+		$maxkey = new MongoMaxKey();
+		$bindata = new MongoBinData("1111");
+
+		$out_doc = array("_id" => $id1, 
+										 "name" => $string, 
+										 "val" => $int64,
+										 "date" => $date,
+										 "timestamp" => $timestamp,
+										 "minkey" => $minkey,
+										 "maxkey" => $maxkey,
+										 "bindata" => $bindata);
+
+		$encoded_bson = bson_encode($out_doc);
+
+		$corrupted_bson = substr($encoded_bson, 0, strlen($encoded_bson) - 4);
+
+		$message = "Unexpected end of BSON. Input document is likely corrupted!";
+
+		$this->setExpectedException('MongoException', $message);
+
+		bson_decode($corrupted_bson);
+	}
 } 	

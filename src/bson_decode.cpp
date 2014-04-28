@@ -2,6 +2,7 @@
 #include "./contrib/classes.h"
 #include "hphp/runtime/base/base-includes.h"
 #include "bson_decode.h"
+#include "ext_mongo.h"
 
 namespace HPHP {
 
@@ -317,9 +318,7 @@ cbson_loads (const bson_t * bson)
 
   if (!bson_iter_init(&iter, bson))
   {
-
-    // printf("Failed to initialize bson iterator. \n");
-    throw Exception("Failed to initialize BSON iterator");
+    mongoThrow<MongoException>("Failed to initialize BSON iterator");
   }
   bson_iter_visit_all(&iter, &gLoadsVisitors, &ret);
 
@@ -338,7 +337,10 @@ cbson_loads_from_string (const String& bson)
   Array output = Array();
 
   reader = bson_reader_new_from_data((uint8_t *)bson.c_str(), bson.size());
-  obj = bson_reader_read(reader, &reached_eof);
+  
+  if (!(obj = bson_reader_read(reader, &reached_eof))) {
+    mongoThrow<MongoException>("Unexpected end of BSON. Input document is likely corrupted!");
+  }  
 
   output = cbson_loads(obj);
   bson_reader_destroy(reader);
@@ -347,17 +349,3 @@ cbson_loads_from_string (const String& bson)
 }
 // Namespace
 }
-
-// Function used for testing
-// int main(int argc, char **argv)
-// {
-//   bson_t b[1];
-//   bson_init( b );
-//   BSON_APPEND_INT32( b, "int32", 1001);
-//   BSON_APPEND_INT64( b, "int64", 999999);
-//   BSON_APPEND_UTF8(b, "string", "test string");
-//   BSON_APPEND_BOOL(b, "boolean", true);
-//   printf("number of keys is %d\n", bson_count_keys(b));
-//   cbson_loads(b);
-//   bson_destroy( b );
-// }

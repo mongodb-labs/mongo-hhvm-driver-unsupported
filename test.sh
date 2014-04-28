@@ -13,5 +13,5 @@ mongoimport --db test --collection temp --file test/students.json --upsert
 
 ${HPHP_HOME}/hphp/hhvm/hhvm \
   -vDynamicExtensions.0=${DIRNAME}/mongo.so \
-  `which phpunit` ${DIRNAME}/test
+  `which phpunit` ${DIRNAME}/test/bson_encode_decode_Test.php
 
