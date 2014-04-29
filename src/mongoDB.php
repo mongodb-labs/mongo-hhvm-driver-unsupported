@@ -69,7 +69,6 @@ class MongoDB {
      * @return  - Returns the database.
      */
 
-    //TODO: Make native
     public function __construct(MongoClient $conn, string $name) {
             $this->client = $conn;
             $this->db_name = $name;
@@ -147,7 +146,7 @@ class MongoDB {
      */
     public function dropCollection(mixed $coll): array {
         if (is_object($coll)) {
-            $coll = (string)$coll;
+            $coll = $coll->getName();
         }
         return $this->command(array('drop' => $coll));
     }
