@@ -36,6 +36,7 @@ namespace HPHP {
 
 MONGO_DEFINE_CLASS(MongoException)
 MONGO_DEFINE_CLASS(MongoConnectionException)
+MONGO_DEFINE_CLASS(MongoCursorException)
 MONGO_DEFINE_CLASS(MongoCursorTimeoutException)
 MONGO_DEFINE_CLASS(MongoDuplicateKeyException)
 MONGO_DEFINE_CLASS(MongoExecutionTimeoutException)

@@ -13,7 +13,7 @@ static void HHVM_METHOD(MongoClient, __construct, const String& uri, Array optio
   }
 
   if (client->isInvalid()) {
-    throw Exception("Unable to connect: %s", uri.c_str());
+    mongoThrow<MongoConnectionException>(strcat("Unable to connect: ", uri.c_str()));
   }
 
   MongocClient::SetPersistent(uri, client);
@@ -92,7 +92,7 @@ static String HHVM_METHOD(MongoClient, getServerVersion) {
   bson_destroy(&buildInfo);
 
   if ( ! result) {
-    throw Exception("Command error: %s", error.message);
+    mongoThrow<MongoResultException>(strcat("Command error: ", error.message));
   }
 
   if (bson_iter_init_find(&iter, &reply, "version")) {

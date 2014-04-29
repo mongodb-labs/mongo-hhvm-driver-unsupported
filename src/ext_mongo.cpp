@@ -5,6 +5,7 @@ namespace HPHP {
 // PHP Exceptions and Classes
 HPHP::Class* MongoException::cls = nullptr;
 HPHP::Class* MongoConnectionException::cls = nullptr;
+HPHP::Class* MongoCursorException::cls = nullptr;
 HPHP::Class* MongoCursorTimeoutException::cls = nullptr;
 HPHP::Class* MongoDuplicateKeyException::cls = nullptr;
 HPHP::Class* MongoExecutionTimeoutException::cls = nullptr;

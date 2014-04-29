@@ -23,14 +23,13 @@ static Array HHVM_METHOD(MongoCursor, current) {
 
 static bool HHVM_METHOD(MongoCursor, hasNext) {
   bson_error_t error;
-  mongoc_cursor_t *cursor = get_cursor(this_)->get();
+  mongoc_cursor_t *cursor = get_cursor(this_)->get(); 
 
   bool ret = mongoc_cursor_more(cursor);
-  if (!mongoc_cursor_error (cursor, &error)) {
-    return ret;
-  } else {
-    throw FatalErrorException(error.message);
-  }
+  if (mongoc_cursor_error (cursor, &error)) {
+    mongoThrow<MongoCursorException>((const char *)error.message);
+  } 
+  return ret;
 }
 
 static void HHVM_METHOD(MongoCursor, next) {
