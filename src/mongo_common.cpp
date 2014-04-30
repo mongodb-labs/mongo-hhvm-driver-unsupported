@@ -75,7 +75,6 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
                 uint32_t                   skip,
                 uint32_t                   limit,
                 uint32_t                   batch_size,
-                bool                       is_command,
                 const bson_t              *query,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs) {

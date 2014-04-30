@@ -154,7 +154,6 @@ MongocCursor(mongoc_client_t           *client,
                                     skip,
                                     limit,
                                     batchSize,
-                                    false,
                                     &query_bs,
                                     &fields_bs,
                                     read_prefs);
