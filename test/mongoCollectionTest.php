@@ -20,6 +20,23 @@ class MongoCollectionTest extends MongoTestCase {
 		$this->assertEquals(1, $db_response["ok"]);
 	}
 
+	public function testCount() {
+		$db = $this->getTestDB();
+		$coll_name = "students";
+		$coll = $db->selectCollection($coll_name);
+		
+		// Get cursor to all documents from collection
+		$cur = $coll->find();
+		// Assert that total number of documents in collection
+		// is equivalent to number of documents in cursor
+		$this->assertEquals($coll->count(), $cur->count());
+	
+		// Assert that number of documents in collection with limit
+		// is less than or equal to the limit specified
+		$this->assertLessThanOrEqual(1, $coll->count(array(), 1, 0));
+		$this->assertLessThanOrEqual(1, $coll->count(array(), -1, 0));
+	}
+
 	public function testInsertAndRemove() {
 		$db = $this->getTestDB();
 		$coll_name = "students";

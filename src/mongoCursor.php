@@ -161,7 +161,7 @@ class MongoCursor {
    *   query.
    */
   public function count(bool $foundOnly = false): int {
-    $pieces = explode($this->ns);
+    $pieces = explode('.', $this->ns);
     $db_name = $pieces[0];
     $collection_name = $pieces[1];
 
@@ -180,7 +180,7 @@ class MongoCursor {
     if (!$command_result["ok"]) {
       throw new MongoCursorException();
     }
-    return $command_result["n"];
+    return intval($command_result["n"]);
   }
 
   /**
