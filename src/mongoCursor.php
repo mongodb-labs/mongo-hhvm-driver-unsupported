@@ -21,7 +21,6 @@ class MongoCursor {
   private $timeout = 100;
   private $read_preference = [];
   private $skip = 0;
-  private $slaveOkay = false;
   private $started_iterating = false;
   private $tailable = false;
 
@@ -149,6 +148,8 @@ class MongoCursor {
     $this->query = $query;
     $this->fields = $fields;
 
+    // inherit read preference from MongoClient
+    $this->read_preference = $connection->getReadPreference();
   }
 
   /**
@@ -404,9 +405,9 @@ class MongoCursor {
    */
   public function slaveOkay(bool $okay = true): MongoCursor {
     if ($this->started_iterating) {
-      throw new MongoCursorException("Tried to add an option after started iterating");
+      throw new MongoCursorException("Tried to set slaveOkay after started iterating");
     }
-    $this->slaveOkay = $okay;
+    $this->read_preference["type"] = MongoClient::RP_SECONDARY_PREFERRED;
     return $this;
   }
 
