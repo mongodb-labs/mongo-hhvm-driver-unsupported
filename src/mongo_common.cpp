@@ -92,7 +92,7 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
   mongoc_collection_t *collection;
   
   collection = mongoc_client_get_collection (client, db_name.c_str(), collection_name.c_str());
-  if (collection_name.equal(String("$cmd")))
+  if (String(collection_name).equal(String("$cmd")))
   {
     m_cursor = mongoc_collection_command (collection,
                                     flags,
