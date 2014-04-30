@@ -66,8 +66,11 @@ class MongoDB {
      */
 
     public function __construct(MongoClient $conn, string $name) {
-            $this->client = $conn;
-            $this->db_name = $name;
+        $this->client = $conn;
+        $this->db_name = $name;
+
+        // inherit read preference from MongoClient
+        $this->readPreference = $conn->getReadPreference();
     }
 
     /**

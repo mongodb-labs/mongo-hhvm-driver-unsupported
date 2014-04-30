@@ -17,7 +17,6 @@ class MongoCollection {
 
   /* Variables */
   private $name;
-  private $slaveOkay = false;
   private $read_preference = [];
 
 
@@ -132,6 +131,9 @@ class MongoCollection {
   public function __construct(MongoDB $db, string $name) {
     $this->db = $db;
     $this->name = $name;
+
+    // inherit read preference from database
+    $this->read_preference = $db->getReadPreference();
   }
 
    /**
@@ -406,7 +408,7 @@ class MongoCollection {
    * @return bool - Returns the value of slaveOkay for this instance.
    */
   public function getSlaveOkay(): bool {
-    return $this->slaveOkay;
+    return ($this->read_preference["type"] == MongoClient::RP_SECONDARY_PREFERRED);
   }
 
   /** TODO: Make sure MongoCode works?
@@ -499,13 +501,17 @@ class MongoCollection {
    *   instance.
    */
   public function setSlaveOkay(bool $ok = true): bool {
+    $former = MongoClient::RP_PRIMARY;
+    if (isset($this->read_preference["type"])) {
+      $former = $this->read_preference["type"];
+    }
+
     $former = $this->read_preference["type"];
     if ($ok) {
       $this->read_preference["type"] = MongoClient::RP_PRIMARY;
     } else {
       $this->read_preference["type"] = MongoClient::RP_SECONDARY_PREFERRED;
     }
-    $this->read_preference["type"] = $ok;
     return ($former != MongoClient::RP_PRIMARY);
   }
 
