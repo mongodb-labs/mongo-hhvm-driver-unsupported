@@ -117,6 +117,16 @@ class MongoCollection {
 
     return $results;
   }
+  /*
+  * Creates a new collection
+  *
+  * @param mongoclient $db - MongoDB  Database.
+  * @param string $name - name    Collection name.
+  *
+  * Note: Does not actually create the collection in the database
+  * Collection is created on the first query to the database 
+  *
+  */
 
 
   public function __construct(MongoDB $db, string $name) {

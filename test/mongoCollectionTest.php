@@ -12,10 +12,16 @@ class MongoCollectionStub extends MongoCollection {
 
 class MongoCollectionTest extends MongoTestCase {
 
+	public function testCreateAndDrop() {
+		$db = $this->getTestDB();
+		$coll_name = "hello";
+		$coll = $db->createCollection($coll_name);
+		$db_response = $coll->drop();
+		$this->assertEquals(1, $db_response["ok"]);
+	}
+
 	public function testInsertAndRemove() {
-		$cli = $this->getTestClient();
-		$database_name = "test";
-		$db = new MongoDB($cli, $database_name);
+		$db = $this->getTestDB();
 		$coll_name = "students";
 		$coll = new MongoCollection($db, $coll_name);
 
