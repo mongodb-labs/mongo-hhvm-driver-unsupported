@@ -68,6 +68,25 @@ The test script depends on the `HPHP_HOME` environment variable and will attempt
 to locate PHPUnit via the `which` command, so ensure that the `phpunit` binary
 is installed in an executable path.
 
+## Interactive Mode
+
+To try out this work in progress for yourself, you can run the extension in interactive mode on HipHop VM via the `interactive_mode.sh` script:
+
+```
+$ ./interactive_mode.sh
+```
+
+Once in interactive mode, you can execute queries and all implemented methods on your existing local databases. For example, if a `test` database exists with a `students` collection, I can access one document in that collection by running the following commands:
+
+```
+hphpd> $cli = new MongoClient();
+hphpd> $db = $cli->selectDB('test');
+hphpd> $coll = $db->selectCollection('students');
+hphpd> $cur = $coll->find()->limit(1);
+hphpd> $cur->rewind();
+hphpd> var_dump($cur->current());
+```
+
 ## Credits
 
 Máximo Cuadros created the src/contrib/encode.h, src/contrib/encode.cpp and src/contrib/classes.h files.
