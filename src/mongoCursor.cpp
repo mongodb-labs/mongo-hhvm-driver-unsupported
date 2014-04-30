@@ -9,6 +9,14 @@ namespace HPHP {
 // class MongoCursor
 
 static Array HHVM_METHOD(MongoCursor, current) {
+
+
+  bool started = this_->o_realProp("started_iterating", ObjectData::RealPropUnchecked, "MongoCursor")->toBoolean();
+  if (!started)
+  {
+    return NULL; 
+  }
+
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
   const bson_t *doc;
 
