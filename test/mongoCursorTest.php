@@ -45,4 +45,19 @@ class MongoCursorTest extends MongoTestCase {
 		$cursor->addOption("", "");
 	}
 
+  public function testSetFlagOne() {
+		$cli = $this->getTestClient();
+		$database_name = "test.students";
+		//$cursor = new MongoCursor(	$cli, $database_name);
+		$cursor = new MongoCursor(	$cli, 
+									$database_name, 
+									array("name" => "Bob"),
+                                  	array()	);
+		
+    $cursor->setFlag(1, true);
+		$cursor->rewind();
+    $info = $cursor->info();
+    $this->assertEquals(true, $info["flags"][1]);
+    //var_dump($info["flags"]);
+  }
 }
