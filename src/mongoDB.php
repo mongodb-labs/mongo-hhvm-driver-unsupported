@@ -53,10 +53,6 @@ class MongoDB {
      */
     public function command(array $command,
                             array $options = array()): array {
-        //echo "Running command ";
-        //var_dump($command);
-        //$coll = $this->selectCollection('$cmd');
-        //echo "Finished selecting collection ";
         return $this->selectCollection('$cmd')->findOne($command);
     }
 
@@ -169,7 +165,7 @@ class MongoDB {
      *
      * @return bool - Returns the database response.
      */
-    public function forceError(): bool {
+    public function forceError(): array {
         return $this->command(array('forceerror' => 1));
     }
 
@@ -204,12 +200,13 @@ class MongoDB {
         $allCollections = [];
         $db_name_length = strlen($this->db_name) + 1;
         $c = $this->selectCollection("system.namespaces")->find();
+        $c->rewind(); //TODO: Remove once C++ implements next
         while ($c->hasNext()) {
             $c->next();
             $curr_coll = $c->current();
             $name = $curr_coll["name"];
-
-            if (strpos("$", $name) >= 0 && strpos(".oplog.$") === false) {
+            print $name;
+            if (strpos("$", $name) >= 0 && strpos(".oplog.$", $name) === false) {
                 continue;
             }
 
@@ -248,7 +245,8 @@ class MongoDB {
      * @return int - Returns the profiling level.
      */
     public function getProfilingLevel(): int {
-        return $this->command(array('profile' => -1));
+        $res = $this->command(array('profile' => -1));
+        return $res["was"];
     }
 
     /**
@@ -351,7 +349,11 @@ class MongoDB {
      * @return int - Returns the previous profiling level.
      */
     public function setProfilingLevel(int $level): int {
-        return $this->command(array('profile' => $level));
+        $res = $this->command(array('profile' => $level));
+        if (!isset($res["ok"]) || !$res["ok"]) {
+            throw new MongoException("Set profiling level failed");
+        }
+        return $res["was"];
     }
 
     /** TODO: When to return false?
