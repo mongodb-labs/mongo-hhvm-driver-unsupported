@@ -34,6 +34,13 @@ static bool HHVM_METHOD(MongoCursor, hasNext) {
 
 static void HHVM_METHOD(MongoCursor, next) {
   const bson_t *doc;
+
+  bool started = this_->o_realProp("started_iterating", ObjectData::RealPropUnchecked, "MongoCursor")->toBoolean();
+  if (!started)
+  {
+    HHVM_MN(MongoCursor, rewind)(this_);
+  }
+  
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
   // if (!mongoc_cursor_next (cursor, &doc)) {
   //   if (mongoc_cursor_error (cursor, &error)) {
