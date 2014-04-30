@@ -2,9 +2,11 @@
 
 class MongoClientTest extends MongoTestCase {
 
-	public function testMongoClient() {
+	public function testListDBs() {
 		$cli = $this->getTestClient();
-		//var_dump((string) $cli);
-		//var_dump($cli->listDBs());
+		
+		$res = $cli->listDBs();
+		$this->assertEquals(1, $res["ok"]);
 	}
+
 } 	
