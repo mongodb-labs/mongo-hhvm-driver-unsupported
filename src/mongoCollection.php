@@ -11,7 +11,7 @@ class MongoCollection {
   const DESCENDING = -1 ;
   
   /* Fields */
-  private $db = NULL;
+  private $db = null;
   private $w;
   private $wtimeout;
 
@@ -73,7 +73,7 @@ class MongoCollection {
 
 
   private function getFullName(): string {
-    return $this->db . $this->name;
+    return $this->db . "." . $this->name;
    }
   /**
    * Perform an aggregation using the aggregation framework
@@ -109,7 +109,13 @@ class MongoCollection {
    */
   public function batchInsert(array $a,
                               array $options = array()): mixed {
-    throw Exception("Not Implemented");
+    $results = array();
+
+    foreach ($a as $doc) {
+      $results[] = $this->insert($doc, $options);
+    }
+
+    return $results;
   }
 
 
@@ -242,16 +248,17 @@ class MongoCollection {
     // indexOptions Object
     $indexOptions = array("key" => $key,
                           "name" => $indexName,
-                          "ns" => $this->name,
-                          "background" => $options["background"],
-                          "unique" => $options["unique"],
-                          "dropDups" => $options["dropDups"],
-                          "sparse" => $options["sparse"],
-                          "expireAfterSeconds" => $options["expireAfterSeconds"],
-                          "v" => $options["v"],
-                          "weights" => $options["weights"],
-                          "default_language" => $options["default_language"],
-                          "language_override" => $options["language_override"]);
+                          "ns" => $this->name);
+    
+    $option_names = ["background", "unique", "dropDups", "sparse",
+                     "expireAfterSeconds", "v", "weights",
+                     "default_language", "language_override"];
+    foreach ($option_names as $opt) {
+      if(isset($options[$opt])) {
+        $indexOptions[$opt] = $options[$opt];
+      }
+    }
+    
 
     // if server version >= 2.6, can run database command
     if ($newer) {
@@ -263,12 +270,11 @@ class MongoCollection {
     return $out;
   }
 
-  /** TODO
+  /**
    * Queries this collection, returning a
    *   for the result set
    *
    * @param array $query - query    The fields for which to search.
-
    * @param array $fields - fields    Fields of the results to return.
    *   The array is in the format array('fieldname' => true, 'fieldname2'
    *   => true). The _id field is always returned.
@@ -296,13 +302,17 @@ class MongoCollection {
                                 array $update,
                                 array $fields,
                                 array $options): array {
-    $out = $this->db->command(array("findAndModify" => $this->name,
-                                    "query" => $query,
-                                    "update" => $update,
-                                    "fields" => $fields,
-                                    "new" => $options["new"],
-                                    "upsert" => $options["upsert"],
-                                    "sort" => $options["sort"]));
+    $cmd = array( "findAndModify" => $this->name,
+                  "query" => $query,
+                  "update" => $update,
+                  "fields" => $fields);
+    $opts = ["new", "upsert", "sort"];
+    foreach ($opts as $option) {
+      if(isset($options[$option])) {
+        $cmd[$option] = $options[$option];
+      }
+    }
+    $out = $this->db->command($cmd);
     return $out["value"];
   }
 
@@ -321,19 +331,11 @@ class MongoCollection {
     $cursor = $this->find($query, $fields);
     $cursor = $cursor->limit(-1);
     $cursor->rewind(); // TODO: Need to remove later 
-    var_dump($cursor->current());
-    if (!$cursor->hasNext()) { 
-      throw new MongoCursorException("FindOne has no result!");
-    }
-    $cursor->next();
-    $ret = $cursor->current();
-    if ($cursor->hasNext()) {
-      throw new MongoCursorException("findOne has more than 1 result!");
-    }
-    return $ret;
+    //var_dump($cursor->current());
+    return $cursor->current();
   }
 
-  /** TODO
+  /** 
    * Gets a collection
    *
    * @param string $name - name    The next string in the collection
@@ -341,8 +343,9 @@ class MongoCollection {
    *
    * @return MongoCollection - Returns the collection.
    */
-  // <<__Native>>
-  // public function __get(string $name): MongoCollection;
+  public function __get(string $name): MongoCollection {
+    return $this->db->selectCollection($name);
+  }
 
   /**
    * Fetches the document pointed to by a database reference
@@ -396,7 +399,7 @@ class MongoCollection {
     return $this->slaveOkay;
   }
 
-  /** TODO
+  /** TODO: Make sure MongoCode works?
    * Performs an operation similar to SQL's GROUP BY command
    *
    * @param mixed $keys - keys    Fields to group by. If an array or
@@ -411,11 +414,27 @@ class MongoCollection {
    *
    * @return array - Returns an array containing the result.
    */
-  // <<__Native>>
-  // public function group(mixed $keys,
-  //                       array $initial,
-  //                       MongoCode $reduce,
-  //                       array $options = array()): array;
+  public function group(mixed $keys,
+                        array $initial,
+                        MongoCode $reduce,
+                        array $options = array()): array {
+    $group = array( '$reduce' => $reduce,
+                    'initial' => $initial);
+    if(get_class($keys) == "MongoCode") {
+      $group['$keyf'] = $keys;
+    }
+    else {
+      $group['key'] = $keys;
+    }
+    
+    $cmd = array('group' => $group);
+    $ret = $this->db->runCommand($cmd);
+    if (!$ret["ok"]) {
+      throw MongoResultException("Group command failed");
+    }
+
+    return $ret;
+  }
 
   
 
@@ -426,7 +445,7 @@ class MongoCollection {
    *   is used, it may not have protected or private properties.    If the
    *   parameter does not have an _id key or property, a new MongoId
    *   instance will be created and assigned to it.
-   * @param array $options - options    Options for the save.
+   * @param array $options - options      Options for the save.
    *
    * @return mixed - If w was set, returns an array containing the status
    *   of the save. Otherwise, returns a boolean representing if the array
@@ -470,9 +489,14 @@ class MongoCollection {
    *   instance.
    */
   public function setSlaveOkay(bool $ok = true): bool {
-    $former = $this->slaveOkay;
-    $this->slaveOkay = $ok;
-    return $former;
+    $former = $this->read_preference["type"];
+    if ($ok) {
+      $this->read_preference["type"] = MongoClient::RP_PRIMARY;
+    } else {
+      $this->read_preference["type"] = MongoClient::RP_SECONDARY_PREFERRED;
+    }
+    $this->read_preference["type"] = $ok;
+    return ($former != MongoClient::RP_PRIMARY);
   }
 
   /**DEPRECATED 
@@ -514,7 +538,7 @@ class MongoCollection {
    * @return string - Returns the full name of this collection.
    */
   public function __toString(): string {
-    return $this->name;
+    return $this->getFullName();
   }
 
   /**

@@ -15,6 +15,10 @@ class MongoDBTest extends MongoTestCase {
 		$db = $this->getTestDB();
 		$coll_name = "hello";
 		$coll = $db->createCollection("hello");
+		//$this->assertEquals(1, $db_response["ok"]);
+
+		$db_response = $db->dropCollection($coll);
+		$this->assertEquals(1, $db_response["ok"]);
 		//$res = $db->dropCollection($coll);
 		//$res = $db->createCollection("hello");
 	}
