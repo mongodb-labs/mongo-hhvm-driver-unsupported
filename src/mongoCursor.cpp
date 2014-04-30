@@ -99,16 +99,16 @@ MongocCursor(mongoc_client_t           *client,
   bson_t read_prefs_tags_bs;
 
   auto flags_array = this_->o_realProp("flags", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
-  mongoc_query_flags_t flags = MONGOC_QUERY_NONE;
+  int flags = MONGOC_QUERY_NONE;
 
-  //if (flags_array->exists(0)) { flags |= MONGOC_QUERY_NONE;}
-  // if (flags_array->exists(1)) { flags = (flags | MONGOC_QUERY_TAILABLE_CURSOR);}
-  // if (flags_array->exists(2)) { flags = (flags | MONGOC_QUERY_SLAVE_OK);}
-  // if (flags_array->exists(3)) { flags = (flags | MONGOC_QUERY_OPLOG_REPLAY);}
-  // if (flags_array->exists(4)) { flags = (flags | MONGOC_QUERY_NO_CURSOR_TIMEOUT);}
-  // if (flags_array->exists(5)) { flags = (flags | MONGOC_QUERY_AWAIT_DATA);}
-  // if (flags_array->exists(6)) { flags = (flags | MONGOC_QUERY_EXHAUST);}
-  // if (flags_array->exists(7)) { flags = (flags | MONGOC_QUERY_PARTIAL);}
+  if (flags_array->exists(0)) { flags |= MONGOC_QUERY_NONE;}
+  if (flags_array->exists(1)) { flags = (flags | MONGOC_QUERY_TAILABLE_CURSOR);}
+  if (flags_array->exists(2)) { flags = (flags | MONGOC_QUERY_SLAVE_OK);}
+  if (flags_array->exists(3)) { flags = (flags | MONGOC_QUERY_OPLOG_REPLAY);}
+  if (flags_array->exists(4)) { flags = (flags | MONGOC_QUERY_NO_CURSOR_TIMEOUT);}
+  if (flags_array->exists(5)) { flags = (flags | MONGOC_QUERY_AWAIT_DATA);}
+  if (flags_array->exists(6)) { flags = (flags | MONGOC_QUERY_EXHAUST);}
+  if (flags_array->exists(7)) { flags = (flags | MONGOC_QUERY_PARTIAL);}
 
   uint32_t skip = this_->o_realProp("skip", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
   uint32_t limit = this_->o_realProp("limit", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
@@ -143,7 +143,7 @@ MongocCursor(mongoc_client_t           *client,
   
   fields_bs = encodeToBSON(fields);   
 
-  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
+  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), (mongoc_query_flags_t)flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
 
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
