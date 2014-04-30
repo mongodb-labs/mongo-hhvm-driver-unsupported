@@ -157,8 +157,6 @@ MongocCursor(mongoc_client_t           *client,
                                     &query_bs,
                                     &fields_bs,
                                     read_prefs);
-
-  // Try this
   
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
