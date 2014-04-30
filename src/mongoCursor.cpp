@@ -56,20 +56,22 @@ static void HHVM_METHOD(MongoCursor, rewind) {
   auto connection = this_->o_realProp("connection", ObjectData::RealPropUnchecked, "MongoCursor")->toObject();
   auto ns = this_->o_realProp("ns", ObjectData::RealPropUnchecked, "MongoCursor")->toString();
   auto query = this_->o_realProp("query", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
-
   bson_t query_bs;
   query_bs = encodeToBSON(query);
+
   /*
   bson_init(&query_bs);
   if (!query->empty()) {
     //Currently only supports "name" query
     bson_append_utf8(&query_bs, "name", 4, query[String("name")].toString().c_str(), query[String("name")].toString().length());
 
+
   }
   */
 
 //Parameters and their types:
 //static void HHVM_METHOD(MongoCursor, __construct, const Object& connection, const String& ns, const Array& query, const Array& fields)
+
 /*
 MongocCursor(mongoc_client_t           *client,
                 const char                *db_and_collection,
@@ -81,7 +83,11 @@ MongocCursor(mongoc_client_t           *client,
                 const bson_t              *query,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs);
-                */
+ 
+*/
+
+  //MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), MONGOC_QUERY_NONE, 0, 0, 0, false, &query_bs, NULL, NULL);
+  //std::cout << "Got past cursor construction with" << ns.c_str() << std::endl;
 
 /* fields needed:
   
@@ -114,7 +120,6 @@ MongocCursor(mongoc_client_t           *client,
   uint32_t limit = this_->o_realProp("limit", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
   uint32_t batchSize = this_->o_realProp("batchSize", ObjectData::RealPropUnchecked, "MongoCursor")->toInt32();
   auto fields = this_->o_realProp("fields", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
-
   auto read_prefs_array = this_->o_realProp("read_preference", ObjectData::RealPropUnchecked, "MongoCursor")->toArray();
   String read_pref_type = read_prefs_array[String("type")].toString();
   Array read_pref_tagsets = read_prefs_array[String("tagsets")].toArray();
@@ -141,10 +146,18 @@ MongocCursor(mongoc_client_t           *client,
   }
   mongoc_read_prefs_set_tags(read_prefs, &read_prefs_tags_bs);
   
-  fields_bs = encodeToBSON(fields);   
+  fields_bs = encodeToBSON(fields);
 
-  MongocCursor *cursor = new MongocCursor(get_client(connection)->get(), ns.c_str(), (mongoc_query_flags_t)flags, skip, limit, batchSize, false, &query_bs, &fields_bs, read_prefs);
-
+  MongocCursor *cursor= new MongocCursor(  get_client(connection)->get(),
+                                    ns.c_str(),
+                                    (mongoc_query_flags_t)flags,
+                                    skip,
+                                    limit,
+                                    batchSize,
+                                    &query_bs,
+                                    &fields_bs,
+                                    read_prefs);
+  
   this_->o_set(s_mongoc_cursor, cursor, s_mongocursor);
   bson_destroy(&query_bs);
   bson_destroy(&fields_bs);

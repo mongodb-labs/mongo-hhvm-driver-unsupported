@@ -5,6 +5,12 @@
  */
 class MongoClient {
 
+  const RP_PRIMARY   = 'primary';
+  const RP_PRIMARY_PREFERRED = 'primaryPreferred';
+  const RP_SECONDARY = 'secondary';
+  const RP_SECONDARY_PREFERRED = 'secondaryPreferred';
+  const RP_NEAREST   = 'nearest';
+
   private $read_preference = [];
   private $databases = [];
 

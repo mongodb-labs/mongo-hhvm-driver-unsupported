@@ -75,7 +75,6 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
                 uint32_t                   skip,
                 uint32_t                   limit,
                 uint32_t                   batch_size,
-                bool                       is_command,
                 const bson_t              *query,
                 const bson_t              *fields,
                 const mongoc_read_prefs_t *read_prefs) {
@@ -93,14 +92,28 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
   mongoc_collection_t *collection;
   
   collection = mongoc_client_get_collection (client, db_name.c_str(), collection_name.c_str());
-  m_cursor = mongoc_collection_find (collection,
+  if (String(collection_name).equal(String("$cmd")))
+  {
+    m_cursor = mongoc_collection_command (collection,
                                     flags,
                                     skip,
-                                   	limit,
+                                    limit,
                                     batch_size,
                                     query,
                                     fields,
                                     read_prefs);
+  }
+  else
+  {
+    m_cursor = mongoc_collection_find (collection,
+                                    flags,
+                                    skip,
+                                    limit,
+                                    batch_size,
+                                    query,
+                                    fields,
+                                    read_prefs);
+  }  
   mongoc_collection_destroy (collection);
 }
 
