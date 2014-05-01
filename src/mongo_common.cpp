@@ -92,9 +92,7 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
   mongoc_collection_t *collection;
   
   collection = mongoc_client_get_collection (client, db_name.c_str(), collection_name.c_str());
-  if (String(collection_name).equal(String("$cmd")))
-  {
-    m_cursor = mongoc_collection_command (collection,
+  m_cursor = mongoc_collection_find (collection,
                                     flags,
                                     skip,
                                     limit,
@@ -102,19 +100,6 @@ MongocCursor::MongocCursor(mongoc_client_t           *client,
                                     query,
                                     fields,
                                     read_prefs);
-  }
-  else
-  {
-    m_cursor = mongoc_collection_find (collection,
-                                    flags,
-                                    skip,
-                                    limit,
-                                    batch_size,
-                                    query,
-                                    fields,
-                                    read_prefs);
-  }  
-  mongoc_collection_destroy (collection);
 }
 
 MongocCursor::~MongocCursor() {
