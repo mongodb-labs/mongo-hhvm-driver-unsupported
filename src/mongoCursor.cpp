@@ -48,6 +48,8 @@ static void HHVM_METHOD(MongoCursor, reset) {
     get_cursor(this_)->~MongocCursor();
     this_->o_set(s_mongoc_cursor, uninit_null(), "MongoCursor");
   }
+
+  this_->o_set("started_iterating", Variant(false), "MongoCursor");
 }
 
 static void HHVM_METHOD(MongoCursor, rewind) {
