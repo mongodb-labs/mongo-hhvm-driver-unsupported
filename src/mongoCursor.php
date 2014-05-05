@@ -253,7 +253,7 @@ class MongoCursor implements \Iterator {
    *
    * @return array - Returns the next object.
    */
-  public function getNext(): array {
+  public function getNext(): ?array {
       $this->next();
       return $this->current();
   }
