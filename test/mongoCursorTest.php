@@ -26,9 +26,7 @@ class MongoCursorTest extends MongoTestCase {
 									$database_name, 
 									array("name" => "Bob"),
                                   	array()	);
-
 		$cursor->rewind();
-
 		/* TODO: add assertEquals to ensure that the document retrieved is what we want
 		while ($cursor->valid())
 		{
@@ -43,6 +41,21 @@ class MongoCursorTest extends MongoTestCase {
 		//Expect to have an exception since the cursor has started iterating.
 		$this->setExpectedException('MongoCursorException');
 		$cursor->addOption("", "");
+	}
+
+	public function testExplain() {
+		$db = $this->getTestDB();
+		$coll = $db->selectCollection("students");
+		$cur = $coll->find();
+		$cur->rewind();
+		$res = $cur->current();
+		$cur->next();
+		var_dump($cur->explain());
+		//var_dump($cur);
+		//$cur->rewind();
+		//$res2 = $cur->current();
+		//$this->assertEquals($res, $res2);
+
 	}
 
   public function testSetFlagOne() {

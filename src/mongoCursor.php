@@ -4,9 +4,10 @@
  * A cursor is used to iterate through the results of a database query.
  * A cursor does not "contain" the database results, it just manages them.
  */
-class MongoCursor {
+class MongoCursor implements \Iterator {
 
   /* variables */
+  private $at = 0;
   private $batchSize = 100;
   private $connection = null;
   private $dead = false;
@@ -14,6 +15,7 @@ class MongoCursor {
   private $fields = [];
   private $flags = [];
   private $immortal = false;
+  private $isSpecial = false;
   private $limit = 0;
   private $ns = null;
   private $partialResultsOK = false;
@@ -32,7 +34,7 @@ class MongoCursor {
    * @return array - The current result as an associative array.
    */
   <<__Native>>
-  public function current(): array;
+  public function current(): ?array;
 
   /**
    * Checks if there are any more elements in this cursor.
@@ -92,6 +94,13 @@ class MongoCursor {
     if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
+
+    // Make the query object special (i.e. wrap in $query) if necessary
+    if ( ! $this->isSpecial) {
+      $this->query['$query'] = $this->query;
+      $this->isSpecial = true;
+    }
+
     $this->query[$key] = $value;
     return $this;
   }
@@ -200,9 +209,26 @@ class MongoCursor {
    * @return array - Returns an explanation of the query.
    */
   public function explain(): array {
-    $this->query['$explain'] = true;
+    $this->reset();
+
+    $originalLimit = $this->limit;
+    $this->limit = abs($this->limit) * -1;
+    $this->addOption('$explain', true);
+
+    /* TODO: rewinding should not be necessary. Since we previously called
+     * reset(), we should just have to call next() and have it initialize the
+     * cursor resource automatically. Since we need to recall rewind() here, we
+     * have to avoid calling next(), lest we advance past the single result.
+     */
     $this->rewind();
-    return $this->current();
+
+    $retval = $this->current();
+
+    $this->limit = $originalLimit;
+    unset($this->query['$explain']);
+    $this->reset();
+
+    return $retval;
   }
 
   /**
@@ -226,7 +252,7 @@ class MongoCursor {
    *
    * @return array - Returns the next object.
    */
-  public function getNext(): array {
+  public function getNext(): ?array {
       $this->next();
       return $this->current();
   }
@@ -261,7 +287,7 @@ class MongoCursor {
       $index = MongoCollection::_toIndexString($index);
     }
 
-    $this->query['$hint'] = $index;
+    $this->addOption('$hint', $index);
     return $this;
   }
 
@@ -306,9 +332,22 @@ class MongoCursor {
    *
    * @return string - The current results _id as a string.
    */
-  public function key(): string {
-    $current_record = $this->current();
-    return $current_record["_id"];
+  public function key(): mixed {
+    $current = $this->current();
+
+    if ($current === null) {
+      return null;
+    }
+
+    if (is_array($current) && array_key_exists('_id', $current)) {
+      return (string) $current['_id'];
+    }
+
+    if (is_object($current) && property_exists($current, '_id')) {
+      return (string) $current->_id;
+    }
+
+    return $this->at - 1;
   }
   /**
    * Limits the number of results returned
@@ -416,10 +455,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function snapshot() {
-    if ($this->started_iterating) {
-      throw new MongoCursorException("Tried to add an option after started iterating");
-    }
-    $this->query['$snapshot'] = true;
+    $this->addOption('$snapshot', true);
     return $this;
   }
 
@@ -436,10 +472,7 @@ class MongoCursor {
    *   called on.
    */
   public function sort(array $fields) {
-    if ($this->started_iterating) {
-      throw new MongoCursorException("Tried to add an option after started iterating");
-    }
-    $this->query['$orderby'] = $fields;
+    $this->addOption('$orderby', $fields);
     return $this;
   }
 
