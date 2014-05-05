@@ -4,7 +4,7 @@
  * A cursor is used to iterate through the results of a database query.
  * A cursor does not "contain" the database results, it just manages them.
  */
-class MongoCursor {
+class MongoCursor implements \Iterator {
 
   /* variables */
   private $batchSize = 100;
