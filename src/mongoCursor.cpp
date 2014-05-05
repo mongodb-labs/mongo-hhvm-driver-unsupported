@@ -8,7 +8,7 @@ namespace HPHP {
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoCursor
 
-static Array HHVM_METHOD(MongoCursor, current) {
+static Variant HHVM_METHOD(MongoCursor, current) {
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
   const bson_t *doc;
 
@@ -17,7 +17,7 @@ static Array HHVM_METHOD(MongoCursor, current) {
     auto ret = cbson_loads(doc); //TODO: We should return the translated PHP Array here  
     return ret;   
   } else {
-    return Array::Create(); //Empty array means no valid document left
+    return init_null_variant;
   }
 }
 
@@ -177,7 +177,7 @@ MongocCursor(mongoc_client_t           *client,
 
 static bool HHVM_METHOD(MongoCursor, valid) {
   auto cur = HHVM_MN(MongoCursor, current)(this_);
-  return !(cur->empty());
+  return ! cur.isNull();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

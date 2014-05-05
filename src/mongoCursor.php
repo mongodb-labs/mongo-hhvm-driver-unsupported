@@ -34,7 +34,7 @@ class MongoCursor implements \Iterator {
    * @return array - The current result as an associative array.
    */
   <<__Native>>
-  public function current(): array;
+  public function current(): ?array;
 
   /**
    * Checks if there are any more elements in this cursor.
