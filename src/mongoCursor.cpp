@@ -41,6 +41,9 @@ static void HHVM_METHOD(MongoCursor, next) {
   //   }
   // }
   mongoc_cursor_next (cursor, &doc);   //Note: error would be catched by valid()
+
+  auto at = this_->o_realProp("at", ObjectData::RealPropUnchecked, "MongoCursor")->toInt64();
+  this_->o_set("at", at + 1, "MongoCursor");
 }
 
 static void HHVM_METHOD(MongoCursor, reset) {
@@ -49,6 +52,7 @@ static void HHVM_METHOD(MongoCursor, reset) {
     this_->o_set(s_mongoc_cursor, init_null_variant, "MongoCursor");
   }
 
+  this_->o_set("at", 0, "MongoCursor");
   this_->o_set("started_iterating", false_varNR, "MongoCursor");
 }
 

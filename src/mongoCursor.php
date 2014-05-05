@@ -7,6 +7,7 @@
 class MongoCursor implements \Iterator {
 
   /* variables */
+  private $at = 0;
   private $batchSize = 100;
   private $connection = null;
   private $dead = false;
@@ -332,9 +333,22 @@ class MongoCursor implements \Iterator {
    *
    * @return string - The current results _id as a string.
    */
-  public function key(): string {
-    $current_record = $this->current();
-    return $current_record["_id"];
+  public function key(): mixed {
+    $current = $this->current();
+
+    if ($current === null) {
+      return null;
+    }
+
+    if (is_array($current) && array_key_exists('_id', $current)) {
+      return (string) $current['_id'];
+    }
+
+    if (is_object($current) && property_exists($current, '_id')) {
+      return (string) $current->_id;
+    }
+
+    return $this->at - 1;
   }
   /**
    * Limits the number of results returned
