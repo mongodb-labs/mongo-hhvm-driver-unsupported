@@ -46,10 +46,10 @@ static void HHVM_METHOD(MongoCursor, next) {
 static void HHVM_METHOD(MongoCursor, reset) {
   if (get_cursor(this_)) {
     get_cursor(this_)->~MongocCursor();
-    this_->o_set(s_mongoc_cursor, uninit_null(), "MongoCursor");
+    this_->o_set(s_mongoc_cursor, init_null_variant, "MongoCursor");
   }
 
-  this_->o_set("started_iterating", Variant(false), "MongoCursor");
+  this_->o_set("started_iterating", false_varNR, "MongoCursor");
 }
 
 static void HHVM_METHOD(MongoCursor, rewind) {
@@ -166,7 +166,7 @@ MongocCursor(mongoc_client_t           *client,
   bson_destroy(&fields_bs);
   bson_destroy(&read_prefs_tags_bs);
 
-  this_->o_set("started_iterating", Variant(true), "MongoCursor");
+  this_->o_set("started_iterating", true_varNR, "MongoCursor");
 
   HHVM_MN(MongoCursor, next)(this_);
 }
