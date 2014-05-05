@@ -14,6 +14,7 @@ class MongoCursor {
   private $fields = [];
   private $flags = [];
   private $immortal = false;
+  private $isSpecial = false;
   private $limit = 0;
   private $ns = null;
   private $partialResultsOK = false;
@@ -92,6 +93,13 @@ class MongoCursor {
     if ($this->started_iterating) {
       throw new MongoCursorException("Tried to add an option after started iterating");
     }
+
+    // Make the query object special (i.e. wrap in $query) if necessary
+    if ( ! $this->isSpecial) {
+      $this->query['$query'] = $this->query;
+      $this->isSpecial = true;
+    }
+
     $this->query[$key] = $value;
     return $this;
   }
@@ -279,7 +287,7 @@ class MongoCursor {
       $index = MongoCollection::_toIndexString($index);
     }
 
-    $this->query['$hint'] = $index;
+    $this->addOption('$hint', $index);
     return $this;
   }
 
@@ -434,10 +442,7 @@ class MongoCursor {
    * @return MongoCursor - Returns this cursor.
    */
   public function snapshot() {
-    if ($this->started_iterating) {
-      throw new MongoCursorException("Tried to add an option after started iterating");
-    }
-    $this->query['$snapshot'] = true;
+    $this->addOption('$snapshot', true);
     return $this;
   }
 
@@ -454,10 +459,7 @@ class MongoCursor {
    *   called on.
    */
   public function sort(array $fields) {
-    if ($this->started_iterating) {
-      throw new MongoCursorException("Tried to add an option after started iterating");
-    }
-    $this->query['$orderby'] = $fields;
+    $this->addOption('$orderby', $fields);
     return $this;
   }
 
