@@ -46,6 +46,7 @@ static void HHVM_METHOD(MongoCursor, next) {
 static void HHVM_METHOD(MongoCursor, reset) {
   if (get_cursor(this_)) {
     get_cursor(this_)->~MongocCursor();
+    this_->o_set(s_mongoc_cursor, Variant(), s_mongocursor);
   }
 }
 

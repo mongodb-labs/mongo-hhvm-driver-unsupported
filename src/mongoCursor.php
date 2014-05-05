@@ -200,9 +200,27 @@ class MongoCursor {
    * @return array - Returns an explanation of the query.
    */
   public function explain(): array {
+    $this->reset();
+    $temp_limit = $this->limit;
+    $this->limit = -1;
     $this->query['$explain'] = true;
-    $this->rewind();
-    return $this->current();
+    $this->rewind(); //TODO: Remove when gh50 branch merged
+    $ret = $this->current();
+    //var_dump($ret);
+    $this->reset();
+    $this->limit = $temp_limit;
+    unset($this->query['$explain']);
+    //var_dump($this);
+
+    // $temp_limit = $this->limit;
+    // $this->limit = -1;
+    // $this->query['$explain'] = true;
+    // $this->rewind();
+    // $ret = $this->current();
+    // $this->limit = $temp_limit;
+    // unset($this->query['$explain']);
+    // $this->rewind();
+    return $ret;
   }
 
   /**
