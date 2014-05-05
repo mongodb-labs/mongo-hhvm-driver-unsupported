@@ -210,26 +210,25 @@ class MongoCursor implements \Iterator {
    */
   public function explain(): array {
     $this->reset();
-    $temp_limit = $this->limit;
-    $this->limit = -1;
-    $this->query['$explain'] = true;
-    $this->rewind(); //TODO: Remove when gh50 branch merged
-    $ret = $this->current();
-    //var_dump($ret);
-    $this->reset();
-    $this->limit = $temp_limit;
-    unset($this->query['$explain']);
-    //var_dump($this);
 
-    // $temp_limit = $this->limit;
-    // $this->limit = -1;
-    // $this->query['$explain'] = true;
-    // $this->rewind();
-    // $ret = $this->current();
-    // $this->limit = $temp_limit;
-    // unset($this->query['$explain']);
-    // $this->rewind();
-    return $ret;
+    $originalLimit = $this->limit;
+    $this->limit = abs($this->limit) * -1;
+    $this->addOption('$explain', true);
+
+    /* TODO: rewinding should not be necessary. Since we previously called
+     * reset(), we should just have to call next() and have it initialize the
+     * cursor resource automatically. Since we need to recall rewind() here, we
+     * have to avoid calling next(), lest we advance past the single result.
+     */
+    $this->rewind();
+
+    $retval = $this->current();
+
+    $this->limit = $originalLimit;
+    unset($this->query['$explain']);
+    $this->reset();
+
+    return $retval;
   }
 
   /**
