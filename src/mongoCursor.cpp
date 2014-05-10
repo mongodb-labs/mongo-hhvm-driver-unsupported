@@ -8,13 +8,21 @@ namespace HPHP {
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoCursor
 
+static void HHVM_METHOD(MongoCursor, rewind);
+
 static Variant HHVM_METHOD(MongoCursor, current) {
+  bool started = this_->o_realProp("started_iterating", ObjectData::RealPropUnchecked, "MongoCursor")->toBoolean();
+  if (!started)
+  {
+    return init_null_variant; 
+  }
+
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
   const bson_t *doc;
 
   doc = mongoc_cursor_current(cursor);
   if (doc) {
-    auto ret = cbson_loads(doc); //TODO: We should return the translated PHP Array here  
+    auto ret = cbson_loads(doc);  
     return ret;   
   } else {
     return init_null_variant;
@@ -34,6 +42,13 @@ static bool HHVM_METHOD(MongoCursor, hasNext) {
 
 static void HHVM_METHOD(MongoCursor, next) {
   const bson_t *doc;
+
+  bool started = this_->o_realProp("started_iterating", ObjectData::RealPropUnchecked, "MongoCursor")->toBoolean();
+  if (!started)
+  {
+    HHVM_MN(MongoCursor, rewind)(this_);
+  }
+  
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
   // if (!mongoc_cursor_next (cursor, &doc)) {
   //   if (mongoc_cursor_error (cursor, &error)) {
