@@ -8,13 +8,13 @@ namespace HPHP {
 ////////////////////////////////////////////////////////////////////////////////
 // class MongoCursor
 
-static Array HHVM_METHOD(MongoCursor, current) {
+static void HHVM_METHOD(MongoCursor, rewind);
 
-
+static Variant HHVM_METHOD(MongoCursor, current) {
   bool started = this_->o_realProp("started_iterating", ObjectData::RealPropUnchecked, "MongoCursor")->toBoolean();
   if (!started)
   {
-    return NULL; 
+    return init_null_variant; 
   }
 
   mongoc_cursor_t *cursor = get_cursor(this_)->get();
@@ -22,10 +22,10 @@ static Array HHVM_METHOD(MongoCursor, current) {
 
   doc = mongoc_cursor_current(cursor);
   if (doc) {
-    auto ret = cbson_loads(doc); //TODO: We should return the translated PHP Array here  
+    auto ret = cbson_loads(doc);  
     return ret;   
   } else {
-    return Array::Create(); //Empty array means no valid document left
+    return init_null_variant;
   }
 }
 
@@ -56,12 +56,19 @@ static void HHVM_METHOD(MongoCursor, next) {
   //   }
   // }
   mongoc_cursor_next (cursor, &doc);   //Note: error would be catched by valid()
+
+  auto at = this_->o_realProp("at", ObjectData::RealPropUnchecked, "MongoCursor")->toInt64();
+  this_->o_set("at", at + 1, "MongoCursor");
 }
 
 static void HHVM_METHOD(MongoCursor, reset) {
   if (get_cursor(this_)) {
     get_cursor(this_)->~MongocCursor();
+    this_->o_set(s_mongoc_cursor, init_null_variant, "MongoCursor");
   }
+
+  this_->o_set("at", 0, "MongoCursor");
+  this_->o_set("started_iterating", false_varNR, "MongoCursor");
 }
 
 static void HHVM_METHOD(MongoCursor, rewind) {
@@ -178,14 +185,14 @@ MongocCursor(mongoc_client_t           *client,
   bson_destroy(&fields_bs);
   bson_destroy(&read_prefs_tags_bs);
 
-  this_->o_set("started_iterating", Variant(true), "MongoCursor");
+  this_->o_set("started_iterating", true_varNR, "MongoCursor");
 
   HHVM_MN(MongoCursor, next)(this_);
 }
 
 static bool HHVM_METHOD(MongoCursor, valid) {
   auto cur = HHVM_MN(MongoCursor, current)(this_);
-  return !(cur->empty());
+  return ! cur.isNull();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
