@@ -5,8 +5,8 @@ if [ "$HPHP_HOME" = "" ]; then
     exit 1
 fi
 
-printf "<?hh\n" > mongo.php
-tail -q -n +2 src/*php src/types/*php src/exceptions/*php >> mongo.php
+printf "<?hh\n" > ext_mongo.php
+tail -q -n +2 src/*php src/types/*php src/exceptions/*php >> ext_mongo.php
 
 $HPHP_HOME/hphp/tools/hphpize/hphpize
 cmake .

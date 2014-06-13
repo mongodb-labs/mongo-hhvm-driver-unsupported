@@ -156,7 +156,7 @@ mongoc_collection_update (mongoc_collection_t          *collection,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void mongoExtension::_initMongoCollectionClass() {
+void MongoExtension::_initMongoCollectionClass() {
     HHVM_ME(MongoCollection, insert);
     HHVM_ME(MongoCollection, remove);
     HHVM_ME(MongoCollection, update);

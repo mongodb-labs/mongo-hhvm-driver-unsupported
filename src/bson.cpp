@@ -20,7 +20,7 @@ namespace HPHP {
         return encode(value);
     }
 
-    void mongoExtension::_initBSON() {
+    void MongoExtension::_initBSON() {
         HHVM_FE(bson_decode);
         HHVM_FE(bson_encode);
     }

@@ -45,6 +45,10 @@ MONGO_DEFINE_CLASS(MongoProtocolException)
 MONGO_DEFINE_CLASS(MongoResultException)
 MONGO_DEFINE_CLASS(MongoWriteConcernException)
 
+MONGO_DEFINE_CLASS(MongoClient)
+MONGO_DEFINE_CLASS(MongoCursor)
+MONGO_DEFINE_CLASS(MongoCollection)
+
 #undef MONGO_DEFINE_CLASS
 
 template<typename T>
@@ -58,26 +62,10 @@ void mongoThrow(const char* message) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-static void mongoc_log_handler(mongoc_log_level_t log_level,
-                               const char *log_domain, const char *message,
-                               void *user_data) {
-   if (log_level < MONGOC_LOG_LEVEL_INFO) {
-      mongoc_log_default_handler(log_level, log_domain, message, NULL);
-   }
-}
-
-class mongoExtension : public Extension {
+class MongoExtension : public Extension {
 public:
-  mongoExtension() : Extension("mongo") {}
-  virtual void moduleInit() {
-
-    mongoc_log_set_handler(mongoc_log_handler, NULL);
-    _initMongoClientClass();
-    _initMongoCursorClass();
-    _initMongoCollectionClass();
-    _initBSON();
-    loadSystemlib();
-  }
+  MongoExtension();
+  virtual void moduleInit();
 
 private:
   void _initMongoClientClass();
