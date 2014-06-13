@@ -5,8 +5,8 @@ if [ "$HPHP_HOME" = "" ]; then
     exit 1
 fi
 
-printf "<?hh\n" > mongo.php
-tail -q -n +2 src/*php src/types/*php src/exceptions/*php >> mongo.php
+printf "<?hh\n\n// AUTO-GENERATED FILE. DO NOT MODIFY.\n" > src/ext_mongo.php
+find src/ -name "*.php" \! -name ext_mongo.php | xargs tail -q -n +2 >> src/ext_mongo.php
 
 $HPHP_HOME/hphp/tools/hphpize/hphpize
 cmake .

@@ -106,7 +106,7 @@ static String HHVM_METHOD(MongoClient, getServerVersion) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void mongoExtension::_initMongoClientClass() {
+void MongoExtension::_initMongoClientClass() {
     HHVM_ME(MongoClient, __construct);
     HHVM_ME(MongoClient, close);
     HHVM_ME(MongoClient, connect);

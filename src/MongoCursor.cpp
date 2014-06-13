@@ -197,7 +197,7 @@ static bool HHVM_METHOD(MongoCursor, valid) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void mongoExtension::_initMongoCursorClass() {
+void MongoExtension::_initMongoCursorClass() {
     HHVM_ME(MongoCursor, current);
     HHVM_ME(MongoCursor, hasNext);
     HHVM_ME(MongoCursor, next);

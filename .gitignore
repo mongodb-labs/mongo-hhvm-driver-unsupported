@@ -6,5 +6,4 @@ Makefile
 *.so
 
 # This file is concatenated from other PHP source files at build time
-mongo.php
-
+src/ext_mongo.php

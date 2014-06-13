@@ -88,6 +88,6 @@ private:
 
 MongocCursor *get_cursor(Object obj);
 
-}
+} // namespace HPHP
 
 #endif // incl_HPHP_EXT_MONGO_COMMON_H_
