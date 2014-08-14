@@ -31,7 +31,7 @@ class MongoClient {
    * @return bool - Returns if the connection was successfully closed.
    */
   <<__Native>>
-  public function close(mixed $connection): bool;
+  public function close(?mixed $connection): bool;
 
   /**
    * Connects to a database server
