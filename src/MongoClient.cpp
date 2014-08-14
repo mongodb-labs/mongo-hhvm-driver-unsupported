@@ -1,5 +1,10 @@
 #include "ext_mongo.h"
 
+#if HHVM_API_VERSION < 20140702L
+#define throw_not_implemented(msg) \
+    throw NotImplementedException(msg);
+#endif
+
 namespace HPHP {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,57 +26,57 @@ static void HHVM_METHOD(MongoClient, __construct, const String& uri, Array optio
 }
 
 static bool HHVM_METHOD(MongoClient, close, Variant connection) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static bool HHVM_METHOD(MongoClient, connect) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Array HHVM_METHOD(MongoClient, dropDB, Variant db) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Object HHVM_METHOD(MongoClient, __get, const String& dbname) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Array HHVM_STATIC_METHOD(MongoClient, getConnections) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Array HHVM_METHOD(MongoClient, getHosts) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Array HHVM_METHOD(MongoClient, getReadPreference) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static bool HHVM_METHOD(MongoClient, killCursor, const String& server_hash, Variant id) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Array HHVM_METHOD(MongoClient, listDBs) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Object HHVM_METHOD(MongoClient, selectCollection, const String& db, const String& collection) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static Object HHVM_METHOD(MongoClient, selectDB, const String& name) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static bool HHVM_METHOD(MongoClient, setReadPreference, const String& read_preference, Array tags) {
-  throw NotImplementedException("Not Implemented");
+  throw_not_implemented(__func__);
 }
 
 static String HHVM_METHOD(MongoClient, __toString) {
   String s = "dummy toString";
   return s;
-  //throw NotImplementedException("Not Implemented");
+  //throw_not_implemented(__func__);
 }
 
 /* Test method that returns the server's version string */
