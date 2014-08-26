@@ -5,6 +5,8 @@ This is an implementation of the
 [HHVM](https://github.com/facebook/hhvm). It is not feature-complete and should
 be considered experimental.
 
+This project is not officially supported and GitHub issues have been disabled.
+
 ## Dependencies
 
 Compiling this extension requires the following libraries:
