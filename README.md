@@ -1,3 +1,7 @@
+**Note**: This repository is unsupported and no longer under active development. Please see [mongodb-labs/mongo-hhvm-driver-prototype](https://github.com/mongodb-labs/mongo-hhvm-driver-prototype) for our official HHVM driver.
+
+----
+
 DISCLAIMER
 ----------
 Please note: all tools/ scripts in this repo are released for use "AS IS" without any warranties of any kind, including, but not limited to their installation, use, or performance. We disclaim any and all warranties, either express or implied, including but not limited to any warranty of noninfringement, merchantability, and/ or fitness for a particular purpose. We do not warrant that the technology will meet your requirements, that the operation thereof will be uninterrupted or error-free, or that any errors will be corrected.
