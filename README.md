@@ -1,4 +1,4 @@
-**Note**: This repository is unsupported and no longer under active development. Please see [mongodb-labs/mongo-hhvm-driver-prototype](https://github.com/mongodb-labs/mongo-hhvm-driver-prototype) for our official HHVM driver.
+**Note**: This repository is unsupported and no longer under active development. Please see [mongodb/mongo-hhvm-driver](https://github.com/mongodb/mongo-hhvm-driver) for our official HHVM driver.
 
 ----
 
